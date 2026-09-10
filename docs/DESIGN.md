@@ -5,7 +5,7 @@
 ## 1. 目标
 
 1. 把已在个人配置中硬化的「终端标题状态」插件产品化，让他人一键安装。
-2. 新增「本会话完成时间」显示：`▣ Build · 模型 · 38m 54s · done 12:23`。
+2. 新增「本会话完成时间」显示：`▣ Build · 模型 · 38m 54s done 12:23`。
 3. 两者独立可插拔（tui.json plugin 数组即开关），对宿主零破坏。
 
 ## 2. 宿主已验证事实（二进制逆向 + 实测）
@@ -22,7 +22,7 @@
 底栏 `▣ Build · 模型 · 时长` 本身无 slot，不可原位注入；`session_prompt_right` 渲染于同一信息行右段，实测效果：
 
 ```
-▣ Build · DeepSeek V4 Pro ok · 2.3s · done 12:42
+▣ Build · DeepSeek V4 Pro ok · 2.3s done 12:42
 ```
 
 ### 2.2 外部插件响应式（核心风险，已消解）
@@ -60,7 +60,7 @@
 ### 3.2 status-done.tsx（完成时间）
 
 - 事件：`session.idle` → 记录该会话完成时刻；`session.status=busy` → 清除记录
-- 渲染：`session_prompt_right` 查表输出 ` · done HH:MM`（跨天 `MM-DD HH:MM`），fg 用 `theme.textMuted`，`flexShrink:0` + `wrapMode:"none"`；无记录返回 null
+- 渲染：`session_prompt_right` 查表输出 `done HH:MM`（跨天 `MM-DD HH:MM`），fg 用 `theme.textMuted`，`flexShrink:0` + `wrapMode:"none"`；无记录返回 null
 - 纯内存态，重启即清（会话历史有更准信息，不做持久化）；`session.deleted` 时清理该会话记录
 - 开关：`OPENCODE_STATUSKIT_DONE=0` 整体停用
 
@@ -97,7 +97,7 @@ opencode --print-logs
 ## 6. 验证记录
 
 1. 三向独立 subagent 审查：隔离/安装安全、slot 渲染与响应式、跨平台与生态对照（2026-09-08）
-2. 端到端实测：隔离配方下 status-done 原型加载 → 真实会话 idle → `· done 12:42` 渲染于目标位置；真实配置 sha256 零变化
+2. 端到端实测：隔离配方下 status-done 原型加载 → 真实会话 idle → `done 12:42` 渲染于目标位置；真实配置 sha256 零变化
 3. 生态对照：无等价先例（zellij-indicator 仅 zellij；statusline 仅 sidebar；rich-footer 依赖作者 fork 且不在 npm）；install.sh 形态与 cockpit 同流派，按其模式加固
 4. 中期可选：发布 npm 包（`exports["./tui"]` + `engines.opencode` 版本声明）支持 `opencode plugin add`；install.sh 保留为 env 投放 + 离线安装路径
 5. 2026-09-10 复审修复（1.18.30 隔离复验）：rc 无尾换行注入语法错误、`--without-title` 语义、未知 shell 退出码、移除 tsconfig（实测无 tsconfig 可加载+渲染）、uninstall 原子写且不再误删 tsconfig、title 开关 `0/false` 语义、done 插件 `session.deleted` 清理

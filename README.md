@@ -5,12 +5,12 @@ OpenCode TUI status plugins. Two independently installable plugins, verified aga
 | Plugin | What it does | Needs env var |
 |---|---|---|
 | `status-title.js` | Terminal window/tab title shows session state: `🟡 \| task` (working), `🟢 \| …` (idle/done), `🔴 \| …` (permission/question pending, retrying, or turn died from an error). Shows the session name. | yes (suppresses the built-in `OC \| …` title writer) |
-| `status-done.tsx` | Appends `· done 12:23` to the input prompt info line, right after the built-in model/timer segment, when the current session's last turn finished. | no |
+| `status-done.tsx` | Appends `done 12:23` to the input prompt info line, right after the built-in model/timer segment, when the current session's last turn finished. | no |
 
 Example of `status-done` in place (verified live):
 
 ```
-▣ Build · GLM-5.3-Flash · 2.3s · done 12:42
+▣ Build · GLM-5.3-Flash · 2.3s done 12:42
 ```
 
 ## Install

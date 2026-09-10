@@ -7,7 +7,7 @@
 | 组件 | 状态 |
 |---|---|
 | `plugins/status-title.js` | ✅ 已在本人环境中长期运行并多轮硬化（三轮 subagent 审查），直接可用 |
-| `plugins/status-done.tsx` | ✅ 核心逻辑已通过隔离环境端到端实测（`· done 12:42` 渲染于输入框信息行右段、紧跟内置计时器） |
+| `plugins/status-done.tsx` | ✅ 核心逻辑已通过隔离环境端到端实测（`done 12:42` 渲染于输入框信息行右段、紧跟内置计时器） |
 | `install.sh` / `uninstall.sh` | ✅ 已在临时 `$HOME` + XDG 沙箱跑通 24 项回归（幂等、换行、JSONC、安装/卸载往返、退出码；2026-09-10），**尚未在真实个人配置上跑过** |
 | `docs/DESIGN.md` | ✅ 定稿设计 + 全部已验证宿主事实 |
 | npm 发布 / install.ps1 | ⬜ 未做（中期计划，见 DESIGN.md §6） |
@@ -49,7 +49,7 @@ OPENCODE_DISABLE_TERMINAL_TITLE=1 opencode --print-logs
 | # | 操作 | 预期 |
 |---|---|---|
 | 1 | 启动后看 stderr 日志 | 有 `applying tui config ... sk-test.XXXX/config/opencode/tui.json`，**无** `failed to load tui plugin` / `failed to initialize` |
-| 2 | 发一条消息（如 `reply with just: ok`），等回复完成 | 输入框信息行右侧出现 ` · done HH:MM`（紧跟模型/计时之后） |
+| 2 | 发一条消息（如 `reply with just: ok`），等回复完成 | 输入框信息行右侧出现 `done HH:MM`（紧跟模型/计时之后） |
 | 3 | 再发一条消息 | 生成中 `done` 消失；完成后重新出现且时间更新 |
 | 4 | 生成中看终端窗口标题 | `🟡 \| …`（项目名+会话名）；完成后 `🟢 \| …` |
 | 5 | `Esc` 打断一次回复 | 标题回到 🟢/🟡 正常，不出现假 🔴（MessageAbortedError 已排除） |

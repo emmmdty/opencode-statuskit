@@ -59,7 +59,7 @@ export default {
           const theme = ctx?.theme?.current
           return (
             <box flexShrink={0} wrapMode="none">
-              <text fg={theme?.textMuted}>{` · done ${fmt(ts)}`}</text>
+              <text fg={theme?.textMuted}>{` done ${fmt(ts)}`}</text>
             </box>
           )
         },
