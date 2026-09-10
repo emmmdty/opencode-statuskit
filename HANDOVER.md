@@ -75,7 +75,7 @@ cd ~/myProjects/tools/opencode-statuskit
 
 install.sh 会做的事（先看再跑）：拷 `plugins/*` → `~/.config/opencode/tui-plugins/`；合并（非覆盖）`tui.json` 的 plugin 数组；向 shell rc 追加带 `# >>> opencode-statuskit >>>` 标记的环境变量块。跑完需**重启 opencode 会话**才生效。
 
-**本机特别注意**：你的 `~/.zshenv` 里已有一行此前手动加的 `export OPENCODE_DISABLE_TERMINAL_TITLE=1`（无标记块）。install.sh 会再追加一个标记块——两行并存无害，但建议装完后手动删掉旧的裸行，以标记块为准。
+**本机状态**：`~/.zshenv` 中的该变量已归一到安装脚本的标记块（2026-09-10 删除了早前手动添加的裸行），不再有重复行。
 
 ## 4. 已知问题与规避（重要）
 
