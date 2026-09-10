@@ -1,5 +1,4 @@
-import { readFileSync, statSync } from "node:fs"
-import { basename as pathBasename, dirname, join, resolve } from "node:path"
+import { basename as pathBasename } from "node:path"
 
 const SYMBOL = {
   idle: "🟢",
@@ -8,7 +7,6 @@ const SYMBOL = {
 }
 
 const DEFAULT_TITLE = /^(New session - |Child session - )\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
-const CONTEXT_TTL_MS = 5000
 const IDLE_ERROR_GRACE_MS = 10000
 const TITLE_RETRY_TTL_MS = 30000
 
@@ -29,65 +27,6 @@ function compact(value, max = 48) {
 function basename(input) {
   const path = clean(input, "OpenCode").replace(/\/+$/, "")
   return pathBasename(path) || "OpenCode"
-}
-
-function stat(path) {
-  try {
-    return statSync(path)
-  } catch {
-    return
-  }
-}
-
-function readText(path, max = 4096) {
-  try {
-    return readFileSync(path, "utf8").slice(0, max)
-  } catch {
-    return ""
-  }
-}
-
-function findGitEntry(directory) {
-  const start = clean(directory, "")
-  if (!start) return
-
-  let current = resolve(start)
-  while (true) {
-    const gitPath = join(current, ".git")
-    const gitStat = stat(gitPath)
-    if (gitStat) return { path: gitPath, root: current, stat: gitStat }
-
-    const parent = dirname(current)
-    if (parent === current) return
-    current = parent
-  }
-}
-
-function gitDirectory(entry) {
-  if (!entry) return
-  if (entry.stat.isDirectory()) return entry.path
-  if (!entry.stat.isFile()) return
-
-  const match = readText(entry.path, 1024).match(/^gitdir:\s*(.+)$/m)
-  if (!match) return
-
-  const gitdir = clean(match[1], "")
-  if (!gitdir) return
-  return resolve(entry.root, gitdir)
-}
-
-function branchName(directory) {
-  const gitDir = gitDirectory(findGitEntry(directory))
-  if (!gitDir) return
-
-  const head = clean(readText(join(gitDir, "HEAD"), 1024), "")
-  if (!head) return
-
-  const ref = head.match(/^ref:\s*refs\/heads\/(.+)$/)
-  if (ref) return compact(ref[1], 40)
-
-  const sha = head.match(/^[0-9a-f]{40}$/i)
-  if (sha) return `detached:${head.slice(0, 8)}`
 }
 
 function titleFromInfo(info) {
@@ -135,7 +74,6 @@ const tui = async (api) => {
   const loadingTitles = new Set()
   const failedTitles = new Map()
   const errored = new Map()
-  const context = { directory: "", value: "", expires: 0 }
   let disposed = false
   let scheduled = false
 
@@ -190,23 +128,6 @@ const tui = async (api) => {
     return compact(`${project} ${sessionID.slice(0, 8)}`)
   }
 
-  function currentContext() {
-    const directory = clean(api.state.path?.directory, "")
-    const now = Date.now()
-    if (context.directory === directory && now < context.expires) return context.value
-
-    context.directory = directory
-    context.value = branchName(directory) ?? ""
-    context.expires = now + CONTEXT_TTL_MS
-    return context.value
-  }
-
-  function titleWithContext(title) {
-    const gitContext = currentContext()
-    if (!gitContext) return title
-    return compact(`${title} · ${gitContext}`, 88)
-  }
-
   function stateFor(sessionID) {
     const status = api.state.session.status(sessionID)?.type ?? knownStatus.get(sessionID)
     if (hasAttention(sessionID)) {
@@ -259,10 +180,10 @@ const tui = async (api) => {
         const sessionID = current.params?.sessionID
         if (sessionID) {
           const state = stateFor(sessionID)
-          next = `${SYMBOL[state]} | ${titleWithContext(displayTitle(sessionID))}`
+          next = `${SYMBOL[state]} | ${displayTitle(sessionID)}`
         }
       } else if (current.name !== "home") {
-        next = `${SYMBOL.idle} | ${titleWithContext(compact(clean(current.name, "OpenCode")))}`
+        next = `${SYMBOL.idle} | ${compact(clean(current.name, "OpenCode"))}`
       }
 
       api.renderer.setTerminalTitle(next)
