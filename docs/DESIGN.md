@@ -52,7 +52,7 @@
 ### 3.1 status-title.js（终端标题）
 
 - 状态机：🔴（pendingCount>0【权限/提问挂起，读 store 权威数据】∨ status=retry ∨ session.error 且当前状态非 busy）＞ 🟡（busy）＞ 🟢（idle）
-- session.error 仅在非 busy 时点亮红灯（吸收型 stream error 不污染健康运行期）；idle 时清除 >10s 的旧错误（死亡 turn 保持红灯至下一 busy——多窗口场景的"需要关注"信号）
+- session.error 仅在非 busy 时点亮红灯（吸收型 stream error 不污染健康运行期）；idle 时清除 >10s 的旧错误（含该会话整个子树；死亡 turn 保持红灯至下一 busy——多窗口场景的"需要关注"信号）；任一会话转 busy 时清除其自身及整个子树的错误标记（子 agent 失败后其自身不会再 busy，用户继续任意祖先会话即视为已知悉，避免父标题永久卡 🔴）
 - 标题缓存：默认标题（`New session - <ISO>` 正则，与 core 逐字一致）不入缓存；fetch 负缓存 30s；事件写入优先于 fetch 回写（keepTitle）
 - 控制字符剥离 C0/DEL/C1/零宽/双向符；compact 按 code point 截断；setTitle 整体 try/catch
 - 开关：`OPENCODE_DISABLE_STATUS_TITLE` 为真值（非空、非 `0`/`false`）时整体停用

@@ -117,3 +117,10 @@ opencode-statuskit/
 - uninstall.sh：tui.json 改为 tmp+rename 原子写；不再删 `tsconfig.json`（防误删同目录其他插件共享的配置）。
 - plugins/：移除 `tsconfig.json`（隔离实测不需要）；`status-title.js` 的 `OPENCODE_DISABLE_STATUS_TITLE=0/false` 不再误禁用，`basename` 改用 `node:path`（Windows 路径）；`status-done.tsx` 在 `session.deleted` 时清理内存表。
 - 全部修复均在临时 `$HOME` + XDG 沙箱中回归（见 §2 配方），未触碰真实配置。
+
+## 8. 2026-09-11 修复记录
+
+- `status-title.js`：子 agent 任务失败（如额度耗尽）后，`session.error` 落在子会话 → `errored` 标记只在该会话自身重新 busy 时清除，而失败的子会话不会再 busy，且其 `session.idle` 在错误后立即到达（<10s grace，标记保留）→ 父会话标题永久卡 🔴，用户继续主任务也不恢复 🟡。
+- 修复：`session.status=busy` 时清除该会话自身及整个子树的错误标记（`clearErroredDeep`）；`session.idle` 时对整个子树套用原有的 >10s 陈旧清除（`clearStaleErroredDeep`）。语义：用户继续任意祖先会话即视为已知悉子树内失败；主 turn 吸收子失败并正常运行 >10s 后结束不再假亮 🔴。
+- 验证：`/tmp/opencode/sk-test/test-status-title.mjs` 模拟事件回归（子失败→继续→🟡、吸收失败→🟢、权限挂起/retry 仍 🔴、根死亡 turn 语义不变），修复前 3 项 FAIL、修复后 10 项全 PASS。
+- 后续审计改进：`session.deleted` 改为 `deleteSessionDeep` 深清整个子树的 titles/parents/children/knownStatus/errored/failedTitles（原先只清被删会话自身，非级联删除时子树表项残留；无功能影响，纯卫生）。回归扩至 13 项（含三级子树删除 + 幂等重复 deleted 事件），全 PASS。

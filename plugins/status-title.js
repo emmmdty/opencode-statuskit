@@ -168,6 +168,34 @@ const tui = async (api) => {
     return false
   }
 
+  function clearErroredDeep(sessionID, seen = new Set()) {
+    if (!sessionID || seen.has(sessionID)) return
+    seen.add(sessionID)
+    errored.delete(sessionID)
+    for (const childID of children.get(sessionID) ?? []) clearErroredDeep(childID, seen)
+  }
+
+  function clearStaleErroredDeep(sessionID, now, seen = new Set()) {
+    if (!sessionID || seen.has(sessionID)) return
+    seen.add(sessionID)
+    const erroredAt = errored.get(sessionID)
+    if (erroredAt !== undefined && now - erroredAt > IDLE_ERROR_GRACE_MS) errored.delete(sessionID)
+    for (const childID of children.get(sessionID) ?? []) clearStaleErroredDeep(childID, now, seen)
+  }
+
+  function deleteSessionDeep(sessionID, seen = new Set()) {
+    if (!sessionID || seen.has(sessionID)) return
+    seen.add(sessionID)
+    titles.delete(sessionID)
+    parents.delete(sessionID)
+    const childIDs = children.get(sessionID)
+    children.delete(sessionID)
+    knownStatus.delete(sessionID)
+    errored.delete(sessionID)
+    failedTitles.delete(sessionID)
+    for (const childID of childIDs ?? []) deleteSessionDeep(childID, seen)
+  }
+
   function setTitle() {
     if (disposed) return
     const disabled = process.env.OPENCODE_DISABLE_STATUS_TITLE
@@ -214,14 +242,9 @@ const tui = async (api) => {
   api.event.on("session.deleted", (event) => {
     const sessionID = eventSessionID(event)
     if (sessionID) {
-      titles.delete(sessionID)
       const parentID = parents.get(sessionID)
       removeChild(children, parentID, sessionID)
-      parents.delete(sessionID)
-      children.delete(sessionID)
-      knownStatus.delete(sessionID)
-      errored.delete(sessionID)
-      failedTitles.delete(sessionID)
+      deleteSessionDeep(sessionID)
     }
     scheduleTitleUpdate()
   })
@@ -231,7 +254,7 @@ const tui = async (api) => {
     const status = event.properties?.status?.type
     if (!sessionID || !status) return
     knownStatus.set(sessionID, status)
-    if (status === "busy") errored.delete(sessionID)
+    if (status === "busy") clearErroredDeep(sessionID)
     scheduleTitleUpdate()
   })
 
@@ -239,8 +262,7 @@ const tui = async (api) => {
     const sessionID = event.properties?.sessionID
     if (!sessionID) return
     knownStatus.set(sessionID, "idle")
-    const erroredAt = errored.get(sessionID)
-    if (erroredAt !== undefined && Date.now() - erroredAt > IDLE_ERROR_GRACE_MS) errored.delete(sessionID)
+    clearStaleErroredDeep(sessionID, Date.now())
     scheduleTitleUpdate()
   })
 
