@@ -1,21 +1,22 @@
 #!/bin/sh
-# opencode-statuskit installer. POSIX sh, idempotent.
+# opencode-statuskit installer for OpenCode 2.x. POSIX sh, idempotent.
 # Usage: install.sh [--shell SHELL] [--without-title]
 set -eu
 
 MARKER="opencode-statuskit"
 KIT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 CFG_DIR="${OPENCODE_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/opencode}"
-TUI_DEST="$CFG_DIR/tui-plugins"
+PLUGIN_DIR="$CFG_DIR/plugins"
+LEGACY_DIR="$CFG_DIR/tui-plugins"
+CLI_JSON="$CFG_DIR/cli.json"
 TUI_JSON="$CFG_DIR/tui.json"
 
-SHELL_OVERRIDE=""
 WITH_TITLE=1
 while [ $# -gt 0 ]; do
   case "$1" in
     --shell)
       [ $# -ge 2 ] || { echo "missing value for --shell" >&2; exit 1; }
-      SHELL_OVERRIDE="$2"
+      echo "==> --shell is no longer needed: OpenCode 2 reads terminal.title from cli.json"
       shift 2
       ;;
     --without-title) WITH_TITLE=0; shift ;;
@@ -24,124 +25,136 @@ while [ $# -gt 0 ]; do
 done
 
 echo "==> config dir: $CFG_DIR"
-mkdir -p "$TUI_DEST"
+mkdir -p "$PLUGIN_DIR"
 
 echo "==> copying plugins"
-cp "$KIT_DIR/plugins/status-done.tsx" "$TUI_DEST/status-done.tsx"
+mkdir -p "$PLUGIN_DIR/status-done"
+cp "$KIT_DIR/plugins/v2/status-done/tui.tsx" "$PLUGIN_DIR/status-done/tui.tsx"
 if [ "$WITH_TITLE" -eq 1 ]; then
-  cp "$KIT_DIR/plugins/status-title.js" "$TUI_DEST/status-title.js"
-  WANT_JSON='["./tui-plugins/status-title.js","./tui-plugins/status-done.tsx"]'
-else
-  WANT_JSON='["./tui-plugins/status-done.tsx"]'
+  mkdir -p "$PLUGIN_DIR/status-title"
+  cp "$KIT_DIR/plugins/v2/status-title/tui.ts" "$PLUGIN_DIR/status-title/tui.ts"
 fi
 
-merge_tui_json() {
+# v1 installed single files here. They are never loaded by v2, so remove only
+# files that are recognizably ours, then leave the directory if it has others.
+remove_legacy() {
+  for file in "$LEGACY_DIR/status-title.js" "$LEGACY_DIR/status-done.tsx"; do
+    [ -f "$file" ] || continue
+    if grep -q 'local\.status-title' "$file" 2>/dev/null || grep -q 'local\.status-done' "$file" 2>/dev/null; then
+      rm -f "$file"
+      echo "    removed legacy v1 plugin: $file"
+    else
+      echo "    left unrecognized file alone: $file"
+    fi
+  done
+  rmdir "$LEGACY_DIR" 2>/dev/null || true
+}
+remove_legacy
+
+# V1 injected OPENCODE_DISABLE_TERMINAL_TITLE into shell rcs. V2 ignores that
+# variable and uses cli.json, so remove only the marked block we added.
+remove_legacy_rc_blocks() {
+  for rc in "$HOME/.zshenv" "${ZDOTDIR:-$HOME}/.zshenv" "$HOME/.bashrc" "$HOME/.bash_profile" "$HOME/.config/fish/config.fish" "${XDG_CONFIG_HOME:-$HOME/.config}/fish/config.fish"; do
+    [ -f "$rc" ] || continue
+    grep -q ">>> $MARKER" "$rc" || continue
+    TMP=$(mktemp)
+    awk -v m="$MARKER" 'BEGIN{skip=0} $0 ~ ("^# >>> " m " >>>$"){skip=1;next} $0 ~ ("^# <<< " m " <<<$"){skip=0;next} skip==0{print}' "$rc" > "$TMP"
+    mv "$TMP" "$rc"
+    echo "    removed obsolete v1 env block: $rc"
+  done
+}
+remove_legacy_rc_blocks
+
+merge_cli_json() {
   if command -v node >/dev/null 2>&1; then
     if ! node -e '
       const fs = require("fs");
       const path = process.argv[1];
-      const want = JSON.parse(process.argv[2]);
+      const writeTitle = process.argv[2] === "1";
+      const stale = [
+        "./tui-plugins/status-title.js",
+        "./tui-plugins/status-done.tsx",
+      ];
       let cfg = {};
       if (fs.existsSync(path)) {
         const raw = fs.readFileSync(path, "utf8");
         try { cfg = JSON.parse(raw); }
-        catch { console.error("tui.json is not strict JSON (JSONC/comments detected). Merge manually:"); console.error("  plugin: " + JSON.stringify(want)); process.exit(2); }
+        catch {
+          console.error("cli.json is not strict JSON (comments/trailing commas detected). Edit manually:");
+          if (writeTitle) {
+            console.error("  set terminal.title to false (keep other terminal keys)");
+            console.error("  remove legacy plugin entries: " + stale.join(", "));
+          }
+          console.error("  plugins are already copied to " + process.argv[3]);
+          process.exit(2);
+        }
       }
-      if (!Array.isArray(cfg.plugin)) cfg.plugin = [];
-      for (const p of want) if (!cfg.plugin.includes(p)) cfg.plugin.push(p);
-      if (!cfg.$schema) cfg.$schema = "https://opencode.ai/tui.json";
+      if (writeTitle) {
+        if (!cfg.terminal || typeof cfg.terminal !== "object" || Array.isArray(cfg.terminal)) cfg.terminal = {};
+        cfg.terminal.title = false;
+      }
+      if (Array.isArray(cfg.plugins)) {
+        cfg.plugins = cfg.plugins.filter((entry) => !stale.includes(entry));
+        if (cfg.plugins.length === 0) delete cfg.plugins;
+      }
+      if (!cfg.$schema) cfg.$schema = "https://opencode.ai/v2/cli.json";
       const tmp = path + ".tmp";
       fs.writeFileSync(tmp, JSON.stringify(cfg, null, 2) + "\n");
       fs.renameSync(tmp, path);
-    ' "$TUI_JSON" "$WANT_JSON"; then
-      echo "!! failed to merge $TUI_JSON automatically." >&2
-      echo "   add manually: \"plugin\": $WANT_JSON" >&2
+    ' "$CLI_JSON" "$WITH_TITLE" "$PLUGIN_DIR"; then
+      echo "!! failed to update $CLI_JSON automatically." >&2
+      if [ "$WITH_TITLE" -eq 1 ]; then
+        echo '   set "terminal": { "title": false } manually so the built-in title writer does not fight the plugin.' >&2
+      fi
       exit 2
     fi
   else
-    if [ -f "$TUI_JSON" ]; then
-      echo "!! node not found and $TUI_JSON exists." >&2
-      echo "   add manually: \"plugin\": $WANT_JSON" >&2
+    if [ -f "$CLI_JSON" ]; then
+      echo "!! node not found and $CLI_JSON exists." >&2
+      if [ "$WITH_TITLE" -eq 1 ]; then
+        echo '   set "terminal": { "title": false } manually.' >&2
+      fi
       exit 2
     fi
-    printf '{\n  "$schema": "https://opencode.ai/tui.json",\n  "plugin": %s\n}\n' "$WANT_JSON" > "$TUI_JSON"
+    if [ "$WITH_TITLE" -eq 1 ]; then
+      printf '{\n  "$schema": "https://opencode.ai/v2/cli.json",\n  "terminal": {\n    "title": false\n  }\n}\n' > "$CLI_JSON"
+    else
+      printf '{\n  "$schema": "https://opencode.ai/v2/cli.json"\n}\n' > "$CLI_JSON"
+    fi
   fi
 }
 
-echo "==> registering plugins in tui.json"
-merge_tui_json
+echo "==> updating cli.json"
+merge_cli_json
 
-write_block() {
-  # $1 = rc file, $2 = export line
-  rc="$1"
-  [ -f "$rc" ] || : > "$rc"
-  if grep -q ">>> $MARKER" "$rc"; then
-    echo "    already present: $rc"
-    return 0
-  fi
-  # appending to a file without a trailing newline would merge the marker
-  # into the last line and break the rc with a ">>>" redirection syntax error
-  if [ -n "$(tail -c 1 "$rc")" ]; then
-    printf '\n' >> "$rc"
-  fi
-  TMPB=$(mktemp)
-  {
-    printf '# >>> %s >>>\n' "$MARKER"
-    printf '%s\n' "$2"
-    printf '# <<< %s <<<\n' "$MARKER"
-  } > "$TMPB"
-  guard=$(grep -n 'case \$- in' "$rc" 2>/dev/null | head -n 1 | cut -d: -f1 || true)
-  if [ -n "${guard:-}" ] && [ "$guard" -le 15 ]; then
-    awk -v n="$guard" -v b="$TMPB" 'NR==n{while((getline l < b)>0) print l} {print}' "$rc" > "$rc.new"
-    mv "$rc.new" "$rc"
-  else
-    cat "$TMPB" >> "$rc"
-  fi
-  rm -f "$TMPB"
-  echo "    injected: $rc"
-}
-
-if [ "$WITH_TITLE" -eq 1 ]; then
-  echo "==> injecting OPENCODE_DISABLE_TERMINAL_TITLE (title feature)"
-  SH="${SHELL_OVERRIDE:-${SHELL:-}}"
-  case "$SH" in
-    */zsh)
-      write_block "${ZDOTDIR:-$HOME}/.zshenv" 'export OPENCODE_DISABLE_TERMINAL_TITLE=1'
-      ;;
-    */bash)
-      write_block "$HOME/.bashrc" 'export OPENCODE_DISABLE_TERMINAL_TITLE=1'
-      write_block "$HOME/.bash_profile" 'export OPENCODE_DISABLE_TERMINAL_TITLE=1'
-      ;;
-    */fish)
-      FISH_CFG="${XDG_CONFIG_HOME:-$HOME/.config}/fish/config.fish"
-      mkdir -p "$(dirname "$FISH_CFG")"
-      write_block "$FISH_CFG" 'set -gx OPENCODE_DISABLE_TERMINAL_TITLE 1'
-      ;;
-    "")
-      echo "!! cannot detect shell (\$SHELL empty). plugins are installed, but the" >&2
-      echo "   title feature needs this at opencode launch:" >&2
-      echo "     export OPENCODE_DISABLE_TERMINAL_TITLE=1" >&2
-      echo "   re-run with --shell /path/to/shell, or with --without-title to skip it." >&2
-      exit 2
-      ;;
-    *)
-      echo "!! unsupported shell: $SH. plugins are installed, but the title feature" >&2
-      echo "   needs this at opencode launch:" >&2
-      echo "     export OPENCODE_DISABLE_TERMINAL_TITLE=1" >&2
-      echo "   re-run with --shell /path/to/shell, or with --without-title to skip it." >&2
-      exit 2
-      ;;
-  esac
-else
-  echo "==> skipping title env (--without-title)"
+echo "==> cleaning legacy tui.json entries"
+if [ -f "$TUI_JSON" ] && command -v node >/dev/null 2>&1; then
+  node -e '
+    const fs = require("fs");
+    const path = process.argv[1];
+    const stale = ["./tui-plugins/status-title.js", "./tui-plugins/status-done.tsx"];
+    let cfg;
+    try { cfg = JSON.parse(fs.readFileSync(path, "utf8")); }
+    catch { process.exit(0); }
+    if (!Array.isArray(cfg.plugin)) process.exit(0);
+    const next = cfg.plugin.filter((entry) => !stale.includes(entry));
+    if (next.length === cfg.plugin.length) process.exit(0);
+    if (next.length === 0) delete cfg.plugin;
+    else cfg.plugin = next;
+    const tmp = path + ".tmp";
+    fs.writeFileSync(tmp, JSON.stringify(cfg, null, 2) + "\n");
+    fs.renameSync(tmp, path);
+  ' "$TUI_JSON"
 fi
 
 cat <<'EOF'
 
 done. notes:
-  - running opencode instances load plugins at startup only; restart them to activate.
-  - tmux users: the env var only reaches new sessions.
-    run: tmux set-environment -g OPENCODE_DISABLE_TERMINAL_TITLE 1  (or restart the tmux server).
-  - the "done" feature needs no env var; the terminal-title feature does.
-    without it the status title still works but may briefly flicker on route changes.
+  - OpenCode 2 discovers plugins from ~/.config/opencode/plugins/<name>/tui.ts(x)
+    and hot-reloads them; no shell environment variables are needed.
+  - terminal.title=false is set by this installer so the built-in "OC | ..."
+    writer does not overwrite the status title. Remove that line manually if you
+    uninstall the title plugin and want the built-in title back.
+  - the old OPENCODE_DISABLE_TERMINAL_TITLE environment variable is ignored by
+    OpenCode 2; this installer removes the marked block the V1 installer added.
 EOF

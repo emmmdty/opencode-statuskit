@@ -1,13 +1,13 @@
 # opencode-statuskit
 
-OpenCode TUI status plugins. Two independently installable plugins, verified against OpenCode **1.18.30**.
+OpenCode TUI status plugins for **OpenCode 2.x** (verified on **2.2.7**). Two independently installable plugins:
 
-| Plugin | What it does | Needs env var |
+| Plugin | What it does | Needs config |
 |---|---|---|
-| `status-title.js` | Terminal window/tab title shows session state: `🟡 \| task` (working), `🟢 \| …` (idle/done), `🔴 \| …` (permission/question pending, retrying, or turn died from an error). Shows the session name. | yes (suppresses the built-in `OC \| …` title writer) |
-| `status-done.tsx` | Appends `done 12:23` to the input prompt info line, right after the built-in model/timer segment, when the current session's last turn finished. | no |
+| `status-title` | Terminal window/tab title shows session state: `🟡 \| task` (working), `🟢 \| …` (idle/done), `🔴 \| …` (permission/form pending, retrying, or turn died from an error). Shows the session name. | `terminal.title: false` (installer sets it) |
+| `status-done` | Appends `done 12:23` to the input prompt info line, right after the built-in model/timer segment, when the current session's last turn finished. | none |
 
-Example of `status-done` in place (verified live):
+Example of `status-done` in place:
 
 ```
 ▣ Build · GLM-5.3-Flash · 2.3s done 12:42
@@ -18,18 +18,22 @@ Example of `status-done` in place (verified live):
 ```sh
 git clone <this repo>
 cd opencode-statuskit
-./install.sh                # both plugins, env var auto-injected per your shell
-./install.sh --without-title  # only the done plugin, no shell rc changes (leaves an existing title install untouched)
-./install.sh --shell /usr/bin/fish  # override shell detection
+./install.sh                  # both plugins
+./install.sh --without-title  # only the done plugin; leaves an existing title install untouched
 ```
 
-Then restart your opencode sessions (running instances load plugins at startup only).
+OpenCode 2 discovers local plugins from `~/.config/opencode/plugins/<name>/tui.ts(x)` and hot-reloads them. No restart or shell environment variables are required.
 
 What the installer touches:
 
-- copies `plugins/status-title.js` and `plugins/status-done.tsx` to `~/.config/opencode/tui-plugins/` (`--without-title` copies only the latter)
-- registers them in `~/.config/opencode/tui.json` (merge; existing keys untouched; requires `node`, otherwise prints manual instructions)
-- appends a marked `OPENCODE_DISABLE_TERMINAL_TITLE=1` block to your shell rc (zsh → `.zshenv`, bash → `.bashrc`+`.bash_profile` with Debian interactive-guard awareness, fish → `config.fish`)
+- copies `plugins/v2/status-title/tui.ts` → `~/.config/opencode/plugins/status-title/tui.ts`
+- copies `plugins/v2/status-done/tui.tsx` → `~/.config/opencode/plugins/status-done/tui.tsx`
+- sets `terminal.title` to `false` in `~/.config/opencode/cli.json` when the title plugin is installed, so the built-in `OC | …` writer does not fight it (requires `node`; prints manual instructions for JSONC files)
+- removes legacy v1 `tui-plugins/status-title.js` / `status-done.tsx` files and their stale `tui.json`/`cli.json` entries
+- removes the obsolete V1 `OPENCODE_DISABLE_TERMINAL_TITLE` block from shell rc files if the old installer added one
+- does **not** add new shell rc changes
+
+`--shell` is still accepted for compatibility but is ignored: v2 reads the title switch from `cli.json`, not an environment variable.
 
 ## Uninstall
 
@@ -37,22 +41,24 @@ What the installer touches:
 ./uninstall.sh
 ```
 
+This removes the plugin directories, legacy v1 files/entries, and any old installer shell-rc blocks. It leaves `terminal.title` untouched; remove that line from `cli.json` if you want the built-in title back.
+
 ## Feature flags
 
 | Env var | Effect |
 |---|---|
-| `OPENCODE_DISABLE_TERMINAL_TITLE=1` | disables OpenCode's built-in title writer (required for clean status titles; installer handles this) |
-| `OPENCODE_DISABLE_STATUS_TITLE=1` | fully disables the `status-title` plugin |
-| `OPENCODE_STATUSKIT_DONE=0` | fully disables the `status-done` plugin |
+| `OPENCODE_DISABLE_STATUS_TITLE=1` | disables the `status-title` plugin |
+| `OPENCODE_STATUSKIT_DONE=0` | disables the `status-done` plugin |
+
+V1's `OPENCODE_DISABLE_TERMINAL_TITLE` is not used by OpenCode 2; use `terminal.title` in `cli.json` instead.
 
 ## Notes & known limits
 
-- Verified on **OpenCode 1.18.30** (`tui.json` plugin mechanism). A v2 line is in development (npm `next`/`beta` snapshots; v2 docs describe `cli.json` + package-based plugin discovery) and is not published as 2.x yet; revalidate when it ships.
-- **tmux**: env vars only reach sessions started after the change — `tmux set-environment -g OPENCODE_DISABLE_TERMINAL_TITLE 1` or restart the tmux server.
-- Non-interactive shells (cron/scripts), GUI-launched terminals and exotic shells are not covered by the installer; set the env var manually there. Without it, titles still work but may flicker briefly on route changes.
-- `done` times are in-memory per TUI instance; they reset on restart by design.
-- The `session_prompt_right` slot is `append` mode and currently unoccupied upstream, so this composes with stock builds and other plugins. If OpenCode ships an official terminal-title formatter (open PR exists), `status-title` may be retired in favor of it.
+- `status-done` times are in-memory per TUI instance; they reset on restart by design.
+- The plugins use the v2 TUI API (`Plugin.define`, `prompt.footer.status`, `context.data`). V1 plugin code does not run in v2; the old files remain in `plugins/` only as historical reference.
+- The title plugin writes once per second so any external title writer self-heals within a second; `terminal.title: false` avoids the flicker entirely.
+- If OpenCode later ships a richer terminal-title configuration, `status-title` can be retired in favor of it.
 
 ## Development
 
-See `docs/DESIGN.md` for the full design, verified host behavior, and the isolated testing recipe (XDG redirection + `OPENCODE_DB=:memory:`) that lets you run test instances without touching your live config.
+See `docs/DESIGN-V2.md` for the v2 design and the isolated testing recipe. `docs/DESIGN.md` documents the historical v1 implementation.

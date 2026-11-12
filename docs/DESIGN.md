@@ -1,4 +1,6 @@
-# opencode-statuskit — 设计文档（定稿）
+# opencode-statuskit — 设计文档（V1，历史）
+
+> **V1 历史文档。** 当前实现与安装方式见 `docs/DESIGN-V2.md`。本文保留用于对照 V1（OpenCode 1.18.x）的宿主事实、slot 机制与安装器设计。
 
 日期：2026-09-08 · 宿主基线：OpenCode 1.18.29（stock，非 fork）· 状态：已通过三向 subagent 审查 + 端到端实测
 

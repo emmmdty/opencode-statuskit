@@ -1,126 +1,154 @@
-# 交接文档 — opencode-statuskit
+# 交接文档 — opencode-statuskit（V2）
 
-> 交接时间：2026-09-08 · 宿主基线：OpenCode 1.18.29 · 设计与验证详情见 `docs/DESIGN.md`
+> 更新时间：2026-11-12 · 宿主基线：OpenCode **2.2.7** · 设计与验证详情见 `docs/DESIGN-V2.md`
+> V1 历史设计与实现记录见 `docs/DESIGN.md`、`plugins/status-title.js`、`plugins/status-done.tsx`（仅存档，安装器不再使用）。
 
 ## 1. 当前状态
 
 | 组件 | 状态 |
 |---|---|
-| `plugins/status-title.js` | ✅ 已在本人环境中长期运行并多轮硬化（三轮 subagent 审查），直接可用 |
-| `plugins/status-done.tsx` | ✅ 核心逻辑已通过隔离环境端到端实测（`done 12:42` 渲染于输入框信息行右段、紧跟内置计时器） |
-| `install.sh` / `uninstall.sh` | ✅ 已在临时 `$HOME` + XDG 沙箱跑通 24 项回归（幂等、换行、JSONC、安装/卸载往返、退出码；2026-09-10），**尚未在真实个人配置上跑过** |
-| `docs/DESIGN.md` | ✅ 定稿设计 + 全部已验证宿主事实 |
-| npm 发布 / install.ps1 | ⬜ 未做（中期计划，见 DESIGN.md §6） |
+| `plugins/v2/status-title/tui.ts` | ✅ v2 API 移植完成，隔离环境实测 🟢🟡🔴 状态与子会话传播 |
+| `plugins/v2/status-done/tui.tsx` | ✅ v2 API 移植完成，隔离环境实测 `done HH:MM` 渲染 |
+| `install.sh` | ✅ 改为 v2 目录式插件安装；隔离沙箱跑通安装/幂等/卸载 |
+| `uninstall.sh` | ✅ 反向清理 v2 插件目录 + V1 遗留文件/条目/rc 块 |
+| `docs/DESIGN-V2.md` | ✅ v2 宿主事实、规格、隔离配方、验证记录 |
+| npm 发布 / install.ps1 | ⬜ 未做 |
 
-当前机器状态：`~/.config/opencode/tui-plugins/status-title.js` 已安装且在用；`status-done` 尚未全局安装。
+本机状态（2026-11-12 已执行 `./install.sh`）：
 
-## 2. 隔离测试（不碰现有配置，随便折腾）
+- `~/.config/opencode/plugins/status-title/tui.ts`
+- `~/.config/opencode/plugins/status-done/tui.tsx`
+- `~/.config/opencode/cli.json` 中 `terminal.title=false`
+- 旧 `~/.config/opencode/tui-plugins/` 已删除
+- 运行中的 2.2.7 TUI 已热重载：插件数 14 → 16，无加载错误
 
-以下命令在你的真实 `~/.config/opencode`、运行中的任务实例之外完成全部验证。复制整段执行：
+## 2. 为什么 V1 失效（根因）
+
+OpenCode 2 的三处破坏性变更：
+
+1. **插件 API 换了**：V1 默认导出的 async 函数返回 hooks，V2 不会被调用；必须 `Plugin.define({ id, setup(context) })`。
+2. **CLI 配置换了**：`tui.json(c)` → 单一全局 `cli.json`。
+3. **本地插件必须是目录**：V2 发现 `<config>/plugins/<name>/tui.ts(x)`；`cli.json` 里配置的单文件路径会被日志警告后跳过。
+
+因此旧的 `cli.json` 条目 `./tui-plugins/status-title.js`、`./tui-plugins/status-done.tsx` 在 2.2.7 下完全没有加载。旧 slot `session_prompt_right` 也不存在，事件负载从 `event.properties` 变为 `event.data`。
+
+## 3. 隔离测试（不碰真实配置）
 
 ```bash
-cd ~/myProjects/tools/opencode-statuskit
+TEST=$(mktemp -d /tmp/sk-v2.XXXX)
+mkdir -p "$TEST/config/opencode/plugins/status-title" \
+         "$TEST/config/opencode/plugins/status-done" \
+         "$TEST/state" "$TEST/data" "$TEST/cache"
 
-# 1) 建立隔离沙箱
-TEST=$(mktemp -d /tmp/sk-test.XXXX)
-mkdir -p "$TEST/config/opencode" "$TEST/state" "$TEST/data"
-ln -s "$PWD/plugins" "$TEST/plugins"
+cp ~/myProjects/tools/opencode-statuskit/plugins/v2/status-title/tui.ts \
+   "$TEST/config/opencode/plugins/status-title/"
+cp ~/myProjects/tools/opencode-statuskit/plugins/v2/status-done/tui.tsx \
+   "$TEST/config/opencode/plugins/status-done/"
 
-# 2) 测试用 tui.json（相对路径经符号链接指向 repo 插件）
-cat > "$TEST/config/opencode/tui.json" <<'EOF'
+cat > "$TEST/config/opencode/cli.json" <<'EOF'
 {
-  "$schema": "https://opencode.ai/tui.json",
-  "plugin": ["../../plugins/status-title.js", "../../plugins/status-done.tsx"]
+  "$schema": "https://opencode.ai/v2/cli.json",
+  "terminal": { "title": false }
 }
 EOF
 
-# 3) 带上你的模型配置（含 key，测试完整个 $TEST 删掉即可）
-cp ~/.config/opencode/opencode.json "$TEST/config/opencode/"
-
-# 4) 启动测试实例（OPENCODE_DISABLE_TERMINAL_TITLE 让 title 测试不受内置写入器干扰）
-cd /tmp   # 任意 scratch 目录作为会话 cwd
+cd /tmp
 XDG_CONFIG_HOME="$TEST/config" XDG_STATE_HOME="$TEST/state" \
-XDG_DATA_HOME="$TEST/data" OPENCODE_DB=:memory: \
-OPENCODE_DISABLE_TERMINAL_TITLE=1 opencode --print-logs
+XDG_DATA_HOME="$TEST/data" XDG_CACHE_HOME="$TEST/cache" \
+OPENCODE_DB=:memory: opencode --standalone --print-logs
+```
+
+脚本化伪终端验证：
+
+```bash
+timeout 12 script -qec "env XDG_CONFIG_HOME=$TEST/config XDG_STATE_HOME=$TEST/state \
+  XDG_DATA_HOME=$TEST/data XDG_CACHE_HOME=$TEST/cache OPENCODE_DB=:memory: \
+  opencode --standalone --print-logs" /tmp/sk-v2-tty.log
 ```
 
 ### 测试清单
 
 | # | 操作 | 预期 |
 |---|---|---|
-| 1 | 启动后看 stderr 日志 | 有 `applying tui config ... sk-test.XXXX/config/opencode/tui.json`，**无** `failed to load tui plugin` / `failed to initialize` |
-| 2 | 发一条消息（如 `reply with just: ok`），等回复完成 | 输入框信息行右侧出现 `done HH:MM`（紧跟模型/计时之后） |
-| 3 | 再发一条消息 | 生成中 `done` 消失；完成后重新出现且时间更新 |
-| 4 | 生成中看终端窗口标题 | `🟡 \| …`（项目名+会话名）；完成后 `🟢 \| …` |
-| 5 | `Esc` 打断一次回复 | 标题回到 🟢/🟡 正常，不出现假 🔴（MessageAbortedError 已排除） |
-| 6 | 触发一次权限确认（如让它跑一条未放行命令） | 标题 🔴；批准后恢复 |
-| 7 | 开关验证：`OPENCODE_STATUSKIT_DONE=0` 重启实例 | done 不渲染；title 正常 |
+| 1 | 启动后看日志 | `plugin reconciliation completed ... plugins=16`，无 load/initialize 错误 |
+| 2 | home 路由看终端标题 | `🟢 \| OpenCode` |
+| 3 | 打开/创建会话 | `🟢 \| <会话标题或项目名+短 ID>` |
+| 4 | 发消息生成中 | 标题变 `🟡 \| …`；完成后变 `🟢 \| …` |
+| 5 | 触发重试/错误 | 标题 `🔴 \| …`；继续会话后恢复 🟡，成功后 🟢 |
+| 6 | 子 agent 失败 | 父会话标题 🔴；父会话继续生成后清除，不永久卡红 |
+| 7 | 触发权限确认/提问表单 | 标题 🔴；批准/回答后恢复 |
+| 8 | 一段回复结束后看输入框信息行右侧 | 出现 ` done HH:MM` |
+| 9 | 再发一条消息 | `done` 消失，完成后重新出现且时间更新 |
+| 10 | `OPENCODE_STATUSKIT_DONE=0` 重启 | done 不渲染；title 正常 |
+| 11 | `OPENCODE_DISABLE_STATUS_TITLE=1` 重启 | title 插件不接管；done 正常 |
 
-> 🔴 的完整触发较难现场复现（需要真实 stream error / 权限挂起）。日常使用中出现 `OC |` 字样覆盖状态且不恢复，即为回归 bug，对照 `docs/DESIGN.md` §2.3/§3.1 排查。
+> 事件语义：v2 的 `session.idle` 是 deprecated 兼容事件；实现以 `session.execution.succeeded/failed/interrupted/started` 为主，`session.idle` 仅作兜底清理。
 
-### 清理
-
-```bash
-rm -rf "$TEST"   # 含复制的 opencode.json（有 key），务必删除
-```
-
-## 3. 正式安装 / 卸载
+## 4. 正式安装 / 卸载
 
 ```bash
 cd ~/myProjects/tools/opencode-statuskit
-./install.sh          # 两个插件都装；自动按 shell 注入环境变量
-./install.sh --without-title   # 只装 done，不动 shell rc
-./uninstall.sh        # 反向清除（文件、tui.json 条目、rc 标记块）
+./install.sh                  # 两个插件
+./install.sh --without-title  # 只装 done，不改 terminal.title
+./uninstall.sh                # 移除插件目录 + V1 遗留
 ```
 
-install.sh 会做的事（先看再跑）：拷 `plugins/*` → `~/.config/opencode/tui-plugins/`；合并（非覆盖）`tui.json` 的 plugin 数组；向 shell rc 追加带 `# >>> opencode-statuskit >>>` 标记的环境变量块。跑完需**重启 opencode 会话**才生效。
+install.sh 做的事：
 
-**本机状态**：`~/.zshenv` 中的该变量已归一到安装脚本的标记块（2026-09-10 删除了早前手动添加的裸行），不再有重复行。
+- 拷 `plugins/v2/status-title/tui.ts` → `~/.config/opencode/plugins/status-title/tui.ts`
+- 拷 `plugins/v2/status-done/tui.tsx` → `~/.config/opencode/plugins/status-done/tui.tsx`
+- 用 node 更新 `~/.config/opencode/cli.json`，设置 `terminal.title=false`（仅在装 title 时）
+- 删除可识别的旧 `tui-plugins/status-*.js(x)` 文件及 `tui.json`/`cli.json` 里的旧条目
+- 删除旧安装器写入 shell rc 的 `OPENCODE_DISABLE_TERMINAL_TITLE` 标记块（v2 不需要）
+- 不再新增 shell rc 改动
 
-## 4. 已知问题与规避（重要）
+`--shell` 仍接受但会提示已不需要。
 
-1. **tmux**：环境变量不进入已运行的 tmux server。装完执行 `tmux set-environment -g OPENCODE_DISABLE_TERMINAL_TITLE 1` 或重启 tmux server，否则会误判"安装无效"。
-2. **slot 渲染铁律**：`session_prompt_right` 渲染函数必须返回 `<box>/<text>` JSX 组件（返回裸字符串 = Orphan text error，官方 issue #42338）。改 `status-done.tsx` 时严禁返回字符串。
-3. **tui.json**：install.sh 只处理严格 JSON；含注释（JSONC）时会打印手动指令退出。**不要让脚本碰 keybinds**——非法 keybind 值会让 TUI 启动直接失败。
-4. **kv.json 不要写**：全文件快照、last-writer-wins，运行中写会被回写覆盖（设计已移除该步骤，勿加回来）。
-5. **非交互场景**：cron/脚本子进程、GUI 直启的终端读不到 rc 环境变量 → title 功能会退化成"偶发 OC 闪烁但不失效"（≤1s 自愈），不是坏。
-6. **版本线**：基于 `tui.json` 机制实测于 1.18.29 / 1.18.30（2026-09-10 于 1.18.30 复验插件加载与 JSX 渲染）。官方 v2 线在开发中（npm `next`/`beta` 为 `0.0.0-*` 快照，v2 文档已描述 `cli.json` + 包式插件发现），**尚未发布正式 2.x**；v2 落地前需重验。
-7. **官方动向**：terminal_title 可配置化的 PR 已在官方 repo open；若官方内置等价功能，title 插件应退役，done 插件不受影响。
+## 5. 已知问题与规避
 
-## 5. 文件清单
+1. **`terminal.title` 必须为 false**：装了 title 插件却让内置写入器同时工作，路由/会话变化时会出现最长约 1 秒的 `OC | …` 覆盖，随后由插件自愈。install.sh 会自动设置。
+2. **不要写 `tui.json` 作为 v2 主配置**：v2 客户端配置在 `cli.json`；`tui.json` 只在 `cli.json` 缺失时用于一次性迁移。
+3. **JSONC 的 cli.json**：install.sh 只处理严格 JSON；含注释/尾逗号时会打印手动指令并退出 2。不要把 keybinds 交给脚本改。
+4. **插件必须返回 JSX 或 null**：slot 渲染返回裸字符串会触发 orphan text 错误。
+5. **热重载**：v2 会监听本地插件目录并自动重载；无需重启。若改了 `cli.json` 中非热重载字段，TUI 也会监听 `cli.json`。
+6. **非交互场景**：`opencode run`/cron 不加载 TUI 插件，属预期。
+7. **版本线**：本实现基于 2.2.7 的 `@opencode/plugin/tui` API；升级次版本后建议先跑 §3 的隔离清单。
+
+## 6. 文件清单
 
 ```
 opencode-statuskit/
-├── README.md              # 用户文档（安装/开关/限制）
-├── HANDOVER.md            # 本文档
-├── docs/DESIGN.md         # 定稿设计：宿主事实、规格、隔离配方、验证记录
-├── install.sh             # POSIX sh，幂等；--shell / --without-title
-├── uninstall.sh           # 反向清理
+├── README.md                    # 用户文档（v2 安装/开关/限制）
+├── HANDOVER.md                  # 本文档
+├── docs/
+│   ├── DESIGN-V2.md             # 当前设计 + v2 隔离验证记录
+│   └── DESIGN.md                # V1 历史设计
+├── install.sh                   # v2 安装器（POSIX sh，幂等）
+├── uninstall.sh                 # v2 卸载器
 └── plugins/
-    ├── status-title.js    # 终端标题状态（🟢🟡🔴，自愈式重写，负缓存，C1 剥离）
-    └── status-done.tsx    # done 时间（session_prompt_right，事件驱动 signal）
+    ├── v2/status-title/tui.ts   # 当前：终端标题状态
+    ├── v2/status-done/tui.tsx   # 当前：done 时间
+    ├── status-title.js          # V1 历史存档，不安装
+    └── status-done.tsx          # V1 历史存档，不安装
 ```
 
-> tsconfig.json 已移除：2026-09-10 隔离实测（无 tsconfig 下加载 + slot JSX 实渲染成功）确认宿主自行完成 JSX 转译，无需随插件分发。
+## 7. 后续待办（按优先级）
 
-## 6. 后续待办（按优先级）
-
-1. 按 §2 清单完成一轮人工测试（重点 #3、#6 两个动态场景）
-2. 真实安装 + 日常使用几天，观察 🔴 误报/漏报
-3. Windows 侧：写 `install.ps1`（双 `$PROFILE` + `setx`），并在真实 Windows Terminal + PowerShell 环境验证
+1. 日常使用观察 🔴 误报/漏报（重点：权限/表单挂起、子 agent 失败、重试）
+2. 真实会话里确认 `done` 与内置计时器的排列符合预期
+3. Windows 侧 `install.ps1`（v2 目录式安装 + cli.json 合并）
 4. macOS bash/zsh 实机回归
-5. 可选：npm 双轨发布（`exports["./tui"]` + `engines.opencode`），支持 `opencode plugin add`
+5. 可选：npm 双轨发布（`exports["./tui"]`），支持 `opencode plugin add`
 
-## 7. 2026-09-10 修复记录
+## 8. 2026-11-12 迁移/验证记录
 
-- install.sh：rc 末尾无换行时先补 `\n`（原会把标记块拼进最后一行，`>>>` 被当作重定向 → rc 语法错误、后续行不执行）；`--without-title` 现在真的只装 done；未知/空 `$SHELL` 改为 `exit 2` 并给出手动注入指引；fish 配置改走 `$XDG_CONFIG_HOME`；删除死代码并让 JSONC 的 node 报错可见；`--shell` 缺参显式报错。
-- uninstall.sh：tui.json 改为 tmp+rename 原子写；不再删 `tsconfig.json`（防误删同目录其他插件共享的配置）。
-- plugins/：移除 `tsconfig.json`（隔离实测不需要）；`status-title.js` 的 `OPENCODE_DISABLE_STATUS_TITLE=0/false` 不再误禁用，`basename` 改用 `node:path`（Windows 路径）；`status-done.tsx` 在 `session.deleted` 时清理内存表。
-- 全部修复均在临时 `$HOME` + XDG 沙箱中回归（见 §2 配方），未触碰真实配置。
-
-## 8. 2026-09-11 修复记录
-
-- `status-title.js`：子 agent 任务失败（如额度耗尽）后，`session.error` 落在子会话 → `errored` 标记只在该会话自身重新 busy 时清除，而失败的子会话不会再 busy，且其 `session.idle` 在错误后立即到达（<10s grace，标记保留）→ 父会话标题永久卡 🔴，用户继续主任务也不恢复 🟡。
-- 修复：`session.status=busy` 时清除该会话自身及整个子树的错误标记（`clearErroredDeep`）；`session.idle` 时对整个子树套用原有的 >10s 陈旧清除（`clearStaleErroredDeep`）。语义：用户继续任意祖先会话即视为已知悉子树内失败；主 turn 吸收子失败并正常运行 >10s 后结束不再假亮 🔴。
-- 验证：`/tmp/opencode/sk-test/test-status-title.mjs` 模拟事件回归（子失败→继续→🟡、吸收失败→🟢、权限挂起/retry 仍 🔴、根死亡 turn 语义不变），修复前 3 项 FAIL、修复后 10 项全 PASS。
-- 后续审计改进：`session.deleted` 改为 `deleteSessionDeep` 深清整个子树的 titles/parents/children/knownStatus/errored/failedTitles（原先只清被删会话自身，非级联删除时子树表项残留；无功能影响，纯卫生）。回归扩至 13 项（含三级子树删除 + 幂等重复 deleted 事件），全 PASS。
+- 根因确认：2.2.7 跳过单文件插件路径；旧 slot/事件负载均不兼容。
+- 新插件：`Plugin.define` + `context.data.on` + `prompt.footer.status` + `context.renderer.setTerminalTitle`。
+- 隔离实测（伪终端 + `OPENCODE_DB=:memory:`）：
+  - 两个插件均被目录发现并加载，无错误；
+  - OSC 标题序列：`🟢 → 🟡 → 🔴（retry/failure）→ 🟡 → 🟢`；
+  - 子会话 busy/failure 能抬升父标题，父会话继续后清除；
+  - 模拟成功 turn 后输入框右侧渲染 ` done 17:24`。
+- 类型检查：`@opencode/plugin@2.2.7` + `@opentui/core@0.8.1` + `@opentui/solid@0.8.1` + `solid-js@1.9.17`，strict 通过。
+- 安装器：临时 `$XDG_CONFIG_HOME` 下验证安装、幂等重跑、卸载；无关 `cli.json` 键保留。
+- 真实安装：运行中的 2.2.7 热重载，插件数 14 → 16，日志无插件错误。
