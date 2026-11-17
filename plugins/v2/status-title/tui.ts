@@ -106,13 +106,17 @@ export default Plugin.define({
     }
 
     function hasAttention(sessionID: string) {
-      for (const id of descendants(sessionID)) {
-        if (errored.has(id) && statusOf(id) !== "busy") return true
-        if (retry.has(id) || statusOf(id) === "retry") return true
+      const ids = descendants(sessionID)
+      const running = ids.some((id) => statusOf(id) === "busy")
+      for (const id of ids) {
         const permissions = context.data.session.permission.list(id)
         if (permissions && permissions.length > 0) return true
         const forms = context.data.session.form.list(id)
         if (forms && forms.length > 0) return true
+        if (retry.has(id) || statusOf(id) === "retry") return true
+        // A historical error is only worth a red title once the subtree has
+        // stopped working. While anything is still running, stay yellow.
+        if (!running && errored.has(id) && statusOf(id) !== "busy") return true
       }
       return false
     }
@@ -205,6 +209,31 @@ export default Plugin.define({
           statuses.set(event.data.sessionID, "busy")
           retry.delete(event.data.sessionID)
           clearErroredDeep(event.data.sessionID)
+          scheduleTitleUpdate()
+        }),
+        context.data.on("session.step.started", (event) => {
+          statuses.set(event.data.sessionID, "busy")
+          retry.delete(event.data.sessionID)
+          scheduleTitleUpdate()
+        }),
+        context.data.on("session.reasoning.started", (event) => {
+          statuses.set(event.data.sessionID, "busy")
+          retry.delete(event.data.sessionID)
+          scheduleTitleUpdate()
+        }),
+        context.data.on("session.text.started", (event) => {
+          statuses.set(event.data.sessionID, "busy")
+          retry.delete(event.data.sessionID)
+          scheduleTitleUpdate()
+        }),
+        context.data.on("session.tool.called", (event) => {
+          statuses.set(event.data.sessionID, "busy")
+          retry.delete(event.data.sessionID)
+          scheduleTitleUpdate()
+        }),
+        context.data.on("session.compaction.started", (event) => {
+          statuses.set(event.data.sessionID, "busy")
+          retry.delete(event.data.sessionID)
           scheduleTitleUpdate()
         }),
         context.data.on("session.execution.succeeded", (event) => {

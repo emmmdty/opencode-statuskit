@@ -68,6 +68,9 @@ export default Plugin.define({
 | `session.deleted` | drop per-session state |
 | `session.status` | source of `busy` / `retry` / `idle` status |
 | `session.retry.scheduled` | attention (🔴) while retrying |
+| `session.step.started` | retry resumed; clear retry attention |
+| `session.reasoning.started` / `session.text.started` / `session.tool.called` | activity; clear retry attention |
+| `session.compaction.started` | activity; clear retry attention |
 | `session.execution.started` | busy (🟡); clears stale errors |
 | `session.execution.succeeded` | idle; done timestamp |
 | `session.execution.failed` | attention (🔴); done timestamp |
@@ -82,8 +85,10 @@ export default Plugin.define({
 
 ### 3.1 status-title
 
-- State precedence: 🔴 (any session in the current subtree has a pending permission/form, a retry, or a non-running error) > 🟡 (any subtree member running) > 🟢.
-- Subtree resolution uses the host family index plus `parentID` chains, so a subagent's busy/error state reaches its parent. A child failure raises the parent to 🔴; continuing the parent (busy) clears the subtree error, matching the V1 fix for stuck red titles.
+- State precedence: 🔴 (any session in the current subtree has a pending permission/form or a retry) > 🟡 (anything in the subtree running) > 🟢.
+- A failed turn is only shown as 🔴 when the subtree has stopped working. While a parent or sibling is still running, a child failure stays 🟡 until the work settles.
+- Retry attention is cleared as soon as the retry actually resumes (`session.step.started`, reasoning/text/tool/compaction activity). A transient retry therefore does not keep the title red for the rest of the turn.
+- Subtree resolution uses the host family index plus `parentID` chains, so a subagent's busy/error state reaches its parent. A child failure raises the parent to 🔴 after the subtree stops; continuing the parent (busy) clears the subtree error, matching the V1 fix for stuck red titles.
 - Errors older than 10 seconds are cleared on the next idle/success/interrupt event.
 - Title text: custom session title when present, otherwise `<project basename> <short session id>`. Fallback titles (`New session - <ISO>`, `Child session - <ISO>`) are treated as absent.
 - Non-session routes: `🟢 | OpenCode` on home, `🟢 | <plugin route name>` otherwise.
@@ -156,6 +161,7 @@ All checks used the isolated recipe above and the stock 2.2.7 binary.
 - Child-session events observed raising/lowering the parent title:
   `🟢 parent` → `🟡 parent` (child busy) → `🔴 parent` (child failed) → `🟡 parent` (parent resumes) → `🟢 parent`.
 - Both plugins active in one TUI: `🟢 → 🟡 → 🔴 → 🟡 → 🟢` title sequence and `done 17:48` rendered together.
+- False-red regression (2026-11-17): retry recovery via `session.step.started` returns the title to 🟡 without waiting for the turn to end; a child failure is suppressed while the parent is still running and only surfaces 🔴 after the subtree stops.
 - `done 17:24` rendered in `prompt.footer.status` after a simulated successful turn.
 - TypeScript check passed with `@opencode/plugin@2.2.7`, `@opentui/core@0.8.1`, `@opentui/solid@0.8.1`, `solid-js@1.9.17`, strict mode.
 - Installer exercised in a throwaway `$XDG_CONFIG_HOME` with legacy V1 files/entries: fresh install, idempotent rerun, and uninstall all preserved unrelated `cli.json` keys and left no kit files behind.

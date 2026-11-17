@@ -152,3 +152,12 @@ opencode-statuskit/
 - 类型检查：`@opencode/plugin@2.2.7` + `@opentui/core@0.8.1` + `@opentui/solid@0.8.1` + `solid-js@1.9.17`，strict 通过。
 - 安装器：临时 `$XDG_CONFIG_HOME` 下验证安装、幂等重跑、卸载；无关 `cli.json` 键保留。
 - 真实安装：运行中的 2.2.7 热重载，插件数 14 → 16，日志无插件错误。
+
+## 9. 2026-11-17 修复：正常运行时误亮 🔴
+
+- 现象：会话仍在正常生成（如 `Thought · 27.3s`），终端标题却显示 🔴。
+- 根因：`session.retry.scheduled` 设置的 retry 标记一直保留到整个 execution 结束；v2 的重试恢复不会触发 `session.execution.started`，也没有 `session.status=busy` 事件，所以一次瞬时重试会让标题在整个回合内保持红色。另一个来源是子 agent 失败时父会话仍在运行，错误标记压过了 🟡。
+- 修复：
+  - `session.step.started`、`session.reasoning.started`、`session.text.started`、`session.tool.called`、`session.compaction.started` 时清除 retry 标记。
+  - `hasAttention` 先判断子树是否仍有 running；运行期间历史错误不再压过 🟡，只有整个子树停下后才显示错误 🔴。权限/表单和 retry 仍可覆盖运行状态。
+- 验证：隔离测试覆盖「瞬时 retry → step.started 恢复 🟡」「父运行中子失败保持 🟡」「父停止后显示 🔴」「下一 turn 恢复 🟡」；strict 类型检查通过；真实配置热重载成功。
