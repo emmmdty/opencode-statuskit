@@ -51,6 +51,13 @@ function Read-JsonFile {
   if (-not (Test-Path -LiteralPath $Path)) { return $null }
   $raw = Get-Content -LiteralPath $Path -Raw
   if ([string]::IsNullOrWhiteSpace($raw)) { return $null }
+  if ($PSVersionTable.PSVersion.Major -ge 6) {
+    $options = [System.Text.Json.JsonDocumentOptions]::new()
+    $options.CommentHandling = [System.Text.Json.JsonCommentHandling]::Disallow
+    $options.AllowTrailingCommas = $false
+    $document = [System.Text.Json.JsonDocument]::Parse($raw, $options)
+    $document.Dispose()
+  }
   return ($raw | ConvertFrom-Json -ErrorAction Stop)
 }
 

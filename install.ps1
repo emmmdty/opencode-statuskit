@@ -56,6 +56,16 @@ function Read-JsonFile {
   if (-not (Test-Path -LiteralPath $Path)) { return $null }
   $raw = Get-Content -LiteralPath $Path -Raw
   if ([string]::IsNullOrWhiteSpace($raw)) { return $null }
+  # PowerShell 7's ConvertFrom-Json accepts comments and trailing commas.
+  # The installer intentionally supports strict JSON only, so validate with
+  # System.Text.Json before parsing. Windows PowerShell 5.1 rejects JSONC itself.
+  if ($PSVersionTable.PSVersion.Major -ge 6) {
+    $options = [System.Text.Json.JsonDocumentOptions]::new()
+    $options.CommentHandling = [System.Text.Json.JsonCommentHandling]::Disallow
+    $options.AllowTrailingCommas = $false
+    $document = [System.Text.Json.JsonDocument]::Parse($raw, $options)
+    $document.Dispose()
+  }
   return ($raw | ConvertFrom-Json -ErrorAction Stop)
 }
 
