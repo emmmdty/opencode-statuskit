@@ -21,7 +21,7 @@
 | `uninstall.sh` | ✅ 反向清理 v2 插件目录 + V1 遗留文件/条目/rc 块 |
 | `docs/DESIGN-V2.md` | ✅ v2 宿主事实、规格、隔离配方、验证记录 |
 | 版本发布 | ✅ `v2.0.1`（本地 annotated tag，2026-11-17） |
-| Windows 原生 | ✅ OpenCode 2.3.0 上已安装并实测（`C:\Users\<user>\.config\opencode`） |
+| Windows 原生 | ✅ OpenCode 2.3.0 上已安装并实测（`%USERPROFILE%\.config\opencode`） |
 | npm 发布 / install.ps1 | ⬜ 未做 |
 
 本机状态（2026-11-12 已执行 `./install.sh`）：
@@ -50,9 +50,9 @@ mkdir -p "$TEST/config/opencode/plugins/status-title" \
          "$TEST/config/opencode/plugins/status-done" \
          "$TEST/state" "$TEST/data" "$TEST/cache"
 
-cp ~/myProjects/tools/opencode-statuskit/plugins/v2/status-title/tui.ts \
+cp <repo>/plugins/v2/status-title/tui.ts \
    "$TEST/config/opencode/plugins/status-title/"
-cp ~/myProjects/tools/opencode-statuskit/plugins/v2/status-done/tui.tsx \
+cp <repo>/plugins/v2/status-done/tui.tsx \
    "$TEST/config/opencode/plugins/status-done/"
 
 cat > "$TEST/config/opencode/cli.json" <<'EOF'
@@ -97,7 +97,7 @@ timeout 12 script -qec "env XDG_CONFIG_HOME=$TEST/config XDG_STATE_HOME=$TEST/st
 ## 4. 正式安装 / 卸载
 
 ```bash
-cd ~/myProjects/tools/opencode-statuskit
+cd <repo>
 ./install.sh                  # 两个插件
 ./install.sh --without-title  # 只装 done，不改 terminal.title
 ./uninstall.sh                # 移除插件目录 + V1 遗留

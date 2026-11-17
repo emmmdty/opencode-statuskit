@@ -3,6 +3,16 @@
   "version": "2.0.1",
   "private": true,
   "description": "OpenCode 2 TUI plugins: terminal status title and session done time",
+  "license": "MIT",
+  "author": "emmmdty",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/emmmdty/opencode-statuskit.git"
+  },
+  "homepage": "https://github.com/emmmdty/opencode-statuskit#readme",
+  "bugs": {
+    "url": "https://github.com/emmmdty/opencode-statuskit/issues"
+  },
   "type": "module",
   "keywords": [
     "opencode",

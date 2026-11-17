@@ -16,7 +16,7 @@ Example of `status-done` in place:
 ## Install
 
 ```sh
-git clone <this repo>
+git clone https://github.com/emmmdty/opencode-statuskit.git
 cd opencode-statuskit
 ./install.sh                  # both plugins
 ./install.sh --without-title  # only the done plugin; leaves an existing title install untouched
@@ -62,3 +62,8 @@ V1's `OPENCODE_DISABLE_TERMINAL_TITLE` is not used by OpenCode 2; use `terminal.
 ## Development
 
 See `docs/DESIGN-V2.md` for the v2 design and the isolated testing recipe. `docs/DESIGN.md` documents the historical v1 implementation.
+
+## License
+
+MIT. See `LICENSE`.
+

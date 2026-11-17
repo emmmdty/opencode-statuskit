@@ -22,7 +22,6 @@
 | npm 发布 | no | `package.json` 为 `private: true`，无 TUI exports |
 | 许可证 | no | 无 `LICENSE` |
 | 自动化测试 / CI | no | 仓库内无测试、无 CI |
-| 分发就绪度页面 | ok | `<local page>` |
 
 ## 3. 分发就绪度
 
