@@ -32,8 +32,8 @@ compatibility patch is released.
 ## Tag and release
 
 ```sh
-git tag -a v2.0.2 -m "v2.0.2"
-git push origin v2.0.2
+git tag -a v2.0.3 -m "v2.0.3"
+git push origin v2.0.3
 ```
 
 The `Release` workflow runs tests, builds `opencode-statuskit-<version>.tar.gz`, `.zip`, and `SHA256SUMS`, then creates the GitHub Release from `docs/releases/<tag>.md`.
@@ -41,8 +41,8 @@ The `Release` workflow runs tests, builds `opencode-statuskit-<version>.tar.gz`,
 Verify:
 
 ```sh
-gh release view v2.0.2
-gh release download v2.0.2 --pattern SHA256SUMS
+gh release view v2.0.3
+gh release download v2.0.3 --pattern SHA256SUMS
 sha256sum -c SHA256SUMS        # macOS: shasum -a 256 -c SHA256SUMS
 ```
 
@@ -54,9 +54,9 @@ If the release is broken:
 
 1. Delete the GitHub Release and the tag:
    ```sh
-   gh release delete v2.0.2 --yes
-   git push origin :refs/tags/v2.0.2
-   git tag -d v2.0.2
+   gh release delete v2.0.3 --yes
+   git push origin :refs/tags/v2.0.3
+   git tag -d v2.0.3
    ```
 2. Revert the release commit on `main` or cut a patch release.
 3. Never move a tag that users may already have downloaded; publish a new patch version instead.
