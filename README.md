@@ -2,6 +2,8 @@
 
 OpenCode TUI status plugins for **OpenCode 2.x** (verified on **2.2.7** Linux and **2.3.0** Windows). Current release: **2.0.1** (see `CHANGELOG.md`). Two independently installable plugins:
 
+> **Status: early public preview.** The plugins work on Linux and Windows. The Windows installer and CI are still being added; **v2.0.2** will be the first supported public release.
+
 | Plugin | What it does | Needs config |
 |---|---|---|
 | `status-title` | Terminal window/tab title shows session state: `🟡 \| task` (working), `🟢 \| …` (idle/done), `🔴 \| …` (permission/form pending, retrying, or turn died from an error). Shows the session name. | `terminal.title: false` (installer sets it) |
