@@ -14,14 +14,14 @@
 | 两个 TUI 插件 | ok | `status-title`、`status-done`，v2.0.1 |
 | Linux 安装器 | ok | `install.sh`，POSIX sh，幂等 |
 | Windows 手动安装 | ok | 已在 Windows 2.3.0 实测 |
-| Windows 安装器 | no | 缺 `install.ps1` / `uninstall.ps1` |
-| macOS 实测 | no | 未在 Terminal / iTerm2 回归 |
-| 文档 | warn | README、CHANGELOG、DESIGN-V2、HANDOVER 已有 |
-| 版本 tag | ok | `v2.0.0`、`v2.0.1`（annotated tag，已推送） |
+| Windows 安装器 | ok | `install.ps1` / `uninstall.ps1`，PowerShell 5.1/7 CI 通过 |
+| macOS 实测 | warn | 安装器 CI 通过；Terminal / iTerm2 的 TUI 未实测 |
+| 文档 | ok | README 已补 Windows、升级、兼容、故障、安全、开发 |
+| 版本 tag | ok | `v2.0.0`、`v2.0.1` 已推送；`v2.0.2` 待发 |
 | 远程仓库 | ok | `emmmdty/opencode-statuskit`（public），`main` 已推送 |
-| npm 发布 | no | `package.json` 为 `private: true`，无 TUI exports |
+| npm 发布 | warn | 两个包已准备，未发布 |
 | 许可证 | ok | MIT，`LICENSE` 与 `package.json` 已补 |
-| 自动化测试 / CI | no | 仓库内无测试、无 CI |
+| 自动化测试 / CI | ok | 13 个测试；Ubuntu / macOS / Windows CI 通过 |
 
 ## 3. 分发就绪度
 
@@ -29,10 +29,10 @@
 
 1. **许可证**：✅ MIT，`LICENSE` 与 `package.json` 已补。
 2. **远程仓库**：✅ `emmmdty/opencode-statuskit`（public），`main`、`v2.0.0`、`v2.0.1` 已推送。
-3. **Windows 安装器**：写 `install.ps1` / `uninstall.ps1`，在 Windows 原生 PowerShell 验证。
-4. **仓库内测试**：把隔离验证固化为可重复运行的测试；至少覆盖标题状态机、done slot、安装/卸载。
-5. **CI 矩阵**：Linux、macOS、Windows；OpenCode 2.2.7 与 2.3.x；Node 20+。
-6. **Release 工件**：源码包、校验和、Release Notes、回滚说明。
+3. **Windows 安装器**：✅ `install.ps1` / `uninstall.ps1`，PowerShell 5.1 与 7 CI 通过。
+4. **仓库内测试**：✅ 13 个测试，覆盖标题状态机、done slot、Unix/PowerShell 安装器。
+5. **CI 矩阵**：✅ Ubuntu、macOS、Windows（Node 22）。
+6. **Release 工件**：✅ 工作流已就绪，tag 触发 tar.gz、zip、SHA256SUMS；`v2.0.2` 待发。
 7. **包结构决策**：✅ 两个独立 npm 包（`opencode-status-title`、`opencode-status-done`），npm 尚未发布。
 
 ### P1 公开时应有
@@ -133,7 +133,7 @@ Start by summarizing the P0 gaps and asking me the open decisions in section 7.
 
 ## 9. 事实边界
 
-- 当前 tag 已推送 GitHub，尚无 GitHub Release。
+- 当前 `v2.0.2` 待发布；`v2.0.0`、`v2.0.1` 的 tag 已推送，尚无 GitHub Release。
 - npm 包未发布，`package.json` 仍为 `private: true`。
 - Windows 是手动安装 + 隔离实测，不是 `install.ps1`。
 - macOS 未实测。

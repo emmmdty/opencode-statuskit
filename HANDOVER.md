@@ -19,6 +19,10 @@
 | `plugins/v2/status-done/tui.tsx` | ✅ v2 API 移植完成，隔离环境实测 `done HH:MM` 渲染 |
 | `install.sh` | ✅ 改为 v2 目录式插件安装；隔离沙箱跑通安装/幂等/卸载 |
 | `uninstall.sh` | ✅ 反向清理 v2 插件目录 + V1 遗留文件/条目/rc 块 |
+| `install.ps1` / `uninstall.ps1` | ✅ Windows 原生安装器；PowerShell 5.1 与 7 CI 验证 |
+| `tests/` | ✅ 13 个测试：标题状态机、done slot、Unix/PowerShell 安装器 |
+| CI | ✅ Ubuntu / macOS / Windows（Node 22） |
+| Release 工作流 | ✅ tag 触发 tar.gz、zip、SHA256SUMS（v2.0.2 待发） |
 | `docs/DESIGN-V2.md` | ✅ v2 宿主事实、规格、隔离配方、验证记录 |
 | 版本发布 | ✅ `v2.0.1`（annotated tag，已推送 GitHub，2026-11-17） |
 | Windows 原生 | ✅ OpenCode 2.3.0 上已安装并实测（`%USERPROFILE%\.config\opencode`） |
@@ -128,31 +132,44 @@ install.sh 做的事：
 
 ```
 opencode-statuskit/
-├── README.md                    # 用户文档（v2 安装/开关/限制）
+├── README.md                    # 用户文档（安装/升级/兼容/故障/安全）
 ├── HANDOVER.md                  # 本文档
 ├── CHANGELOG.md                 # 版本记录
+├── LICENSE                      # MIT
+├── SECURITY.md                  # 漏洞报告与范围
 ├── package.json                 # 版本元数据（private，未发布 npm）
+├── .github/
+│   ├── ISSUE_TEMPLATE/bug.yml   # 环境信息模板
+│   └── workflows/
+│       ├── ci.yml               # 三平台测试
+│       └── release.yml          # tag 触发 Release 与校验和
 ├── docs/
 │   ├── DESIGN-V2.md             # 当前设计 + v2 隔离验证记录
 │   ├── DISTRIBUTION.md          # 分发与推广交接（新窗口先读）
-│   └── DESIGN.md                # V1 历史设计
+│   ├── DESIGN.md                # V1 历史设计
+│   ├── RELEASING.md             # 发版/回滚/npm 步骤
+│   ├── releases/v2.0.2.md       # Release Notes
+│   └── promotion/               # 中英文发布稿、awesome 条目、演示脚本
 ├── install.sh                   # v2 安装器（POSIX sh，幂等）
+├── install.ps1                  # v2 Windows 安装器（PowerShell 5.1+）
 ├── uninstall.sh                 # v2 卸载器
-└── plugins/
-    ├── v2/status-title/tui.ts   # 当前：终端标题状态
-    ├── v2/status-done/tui.tsx   # 当前：done 时间
-    ├── status-title.js          # V1 历史存档，不安装
-    └── status-done.tsx          # V1 历史存档，不安装
+├── uninstall.ps1                # v2 Windows 卸载器
+├── plugins/v2/
+│   ├── status-title/            # tui.ts、package.json、README、LICENSE
+│   └── status-done/             # tui.tsx、package.json、README、LICENSE
+├── tests/                       # 状态机、done slot、安装器、smoke
+├── scripts/build-test-plugin.mjs
+└── archive/v1/                  # V1 历史存档，不安装
 ```
 
 ## 7. 后续待办（按优先级）
 
 1. 日常使用观察 🔴 误报/漏报（重点：权限/表单挂起、子 agent 失败、重试）
 2. 真实会话里确认 `done` 与内置计时器的排列符合预期
-3. Windows 侧 `install.ps1`（v2 目录式安装 + cli.json 合并）
-4. macOS bash/zsh 实机回归
-5. 分发 P0：CI、Release 校验和、README 素材
-6. 分发执行：npm 两个独立包、英文主文档、GitHub 先发、第 2 周推广
+3. Windows 侧 `install.ps1`：✅ 已写，PowerShell 5.1/7 CI 通过；真实 TUI 仍建议再跑一次
+4. macOS bash/zsh 实机回归：安装器已由 CI 覆盖；Terminal/iTerm2 的 TUI 未实测
+5. 分发 P0：✅ LICENSE、GitHub remote、CI、Release 工作流；待补 README 截图/GIF
+6. 分发执行：✅ npm 两个独立包、英文主文档、GitHub 先发；发布稿已备，渠道发布待做
 7. 可选：npm 双轨发布（`exports["./tui"]`），支持 `opencode plugin add`
 
 ## 8. 2026-11-12 迁移/验证记录
