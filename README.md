@@ -1,5 +1,9 @@
 # opencode-statuskit
 
+[![CI](https://github.com/emmmdty/opencode-statuskit/actions/workflows/ci.yml/badge.svg)](https://github.com/emmmdty/opencode-statuskit/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/emmmdty/opencode-statuskit)](https://github.com/emmmdty/opencode-statuskit/releases)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 Terminal status for the **OpenCode 2 TUI**: see what the session is doing without switching windows.
 
 ```
@@ -16,7 +20,7 @@ Two independently installable plugins:
 | `status-title` | Terminal window/tab title shows session state: `🟡` working, `🟢` idle/done, `🔴` needs attention. Includes subagent state. | `terminal.title: false` (installer sets it) |
 | `status-done` | Appends `done 12:23` to the prompt info line after the last turn finishes. | none |
 
-Current release: **2.0.2**. Tested on OpenCode **2.2.7** (Linux) and **2.3.0** (Linux and Windows).
+Current release: **[v2.0.2](https://github.com/emmmdty/opencode-statuskit/releases/tag/v2.0.2)**. Tested on OpenCode **2.2.7** (Linux) and **2.3.0** (Linux and Windows).
 
 ## Install
 

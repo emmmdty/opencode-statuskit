@@ -24,9 +24,9 @@
 | CI | ✅ Ubuntu / macOS / Windows（Node 22） |
 | Release 工作流 | ✅ tag 触发 tar.gz、zip、SHA256SUMS（v2.0.2 待发） |
 | `docs/DESIGN-V2.md` | ✅ v2 宿主事实、规格、隔离配方、验证记录 |
-| 版本发布 | ✅ `v2.0.1`（annotated tag，已推送 GitHub，2026-11-17） |
+| 版本发布 | ✅ `v2.0.2`（GitHub Release + tar.gz/zip/SHA256SUMS，2026-11-17） |
 | Windows 原生 | ✅ OpenCode 2.3.0 上已安装并实测（`%USERPROFILE%\.config\opencode`） |
-| npm 发布 / install.ps1 | ⬜ 未做 |
+| npm 发布 | ⬜ 两个包已准备，未发布 |
 
 本机状态（2026-11-12 已执行 `./install.sh`）：
 
@@ -207,3 +207,15 @@ opencode-statuskit/
   - 热加载测试：TUI 运行中新增 done 插件，slot 正常挂载并在状态更新后渲染。
   - Linux 2.2.7 延迟事件回归仍显示 `done HH:MM`；strict 类型检查通过。
 - 真实 Windows 配置已更新，运行中的 TUI 热重载；重启后也会保留上次 idle 时间作为回退。
+
+## 11. 2026-11-17 发布工程（v2.0.2）
+
+- 公开仓库：`emmmdty/opencode-statuskit`，MIT，`main`、`v2.0.0`、`v2.0.1`、`v2.0.2` 已推送。
+- 历史清理：文档与历史 commit 中的本地路径/用户名已替换；author/committer/tagger 邮箱统一为 GitHub noreply。
+- Windows：`install.ps1` / `uninstall.ps1`；Windows PowerShell 5.1 实机测试通过，CI 另跑 PowerShell 7。
+- 测试：13 个用例，覆盖标题状态机、done slot、Unix 安装器和 PowerShell 安装器；`npm test`、`tsc --noEmit`、`npm run test:installer` 通过。
+- 冒烟：Linux OpenCode 2.3.0 隔离启动，插件无加载错误。
+- CI：Ubuntu / macOS / Windows（Node 22）全绿。
+- Release：`v2.0.2` 自动构建 `tar.gz`、`zip`、`SHA256SUMS`；本地已复验校验和与 tarball 安装。
+- npm：`opencode-status-title`、`opencode-status-done` 包结构已准备（`exports["./tui"]`、peerDependencies、LICENSE/README），未发布。
+- 待办：README 截图/GIF、macOS Terminal/iTerm2 的 TUI 实测、npm 发布、渠道推广。
