@@ -1,6 +1,6 @@
 # opencode-statuskit
 
-OpenCode TUI status plugins for **OpenCode 2.x** (verified on **2.2.7**). Current release: **2.0.0** (see `CHANGELOG.md`). Two independently installable plugins:
+OpenCode TUI status plugins for **OpenCode 2.x** (verified on **2.2.7** Linux and **2.3.0** Windows). Current release: **2.0.1** (see `CHANGELOG.md`). Two independently installable plugins:
 
 | Plugin | What it does | Needs config |
 |---|---|---|
@@ -54,7 +54,7 @@ V1's `OPENCODE_DISABLE_TERMINAL_TITLE` is not used by OpenCode 2; use `terminal.
 
 ## Notes & known limits
 
-- `status-done` times are in-memory per TUI instance; they reset on restart by design.
+- `status-done` keeps event times in memory and falls back to the session's last projected idle marker, so a hot-loaded plugin, reconnect, or restart can still show the last completion time.
 - The plugins use the v2 TUI API (`Plugin.define`, `prompt.footer.status`, `context.data`). V1 plugin code does not run in v2; the old files remain in `plugins/` only as historical reference.
 - The title plugin writes once per second so any external title writer self-heals within a second; `terminal.title: false` avoids the flicker entirely.
 - If OpenCode later ships a richer terminal-title configuration, `status-title` can be retired in favor of it.

@@ -1,5 +1,5 @@
 import { Plugin } from "@opencode/plugin/tui"
-import { createSignal } from "solid-js"
+import { createSignal, Show } from "solid-js"
 
 function fmt(ts: number) {
   const d = new Date(ts)
@@ -37,6 +37,33 @@ export default Plugin.define({
       })
     }
 
+    function lastIdleAt(sessionID: string) {
+      const messages = context.data.session.message.list(sessionID)
+      if (!messages) return undefined
+      for (let index = messages.length - 1; index >= 0; index--) {
+        const message = messages[index]
+        if (message.type === "idle") return message.time?.created
+      }
+      return undefined
+    }
+
+    // Prefer the event timestamp, then fall back to the session's projected
+    // idle marker. A plugin hot-loaded after a turn, or an event missed during
+    // a reconnect, still shows the last completion time.
+    function doneAt(sessionID: string) {
+      if (context.data.session.status(sessionID) === "running") return undefined
+      const info = context.data.session.get(sessionID)
+      const busy = info?.time?.busy
+      const live = done().get(sessionID)
+      if (live !== undefined) {
+        if (busy !== undefined && busy > live) return undefined
+        return live
+      }
+      const idle = lastIdleAt(sessionID)
+      if (idle !== undefined && (busy === undefined || busy <= idle)) return idle
+      return undefined
+    }
+
     const unsubscribes = [
       context.data.on("session.execution.succeeded", (event) => markDone(event.data.sessionID)),
       context.data.on("session.execution.failed", (event) => markDone(event.data.sessionID)),
@@ -56,12 +83,16 @@ export default Plugin.define({
       render: (input) => {
         const sessionID = input.sessionID
         if (!sessionID) return null
-        const ts = done().get(sessionID)
-        if (!ts) return null
+        // Show must own the reactive reads: the slot component body runs once,
+        // so reading doneAt() directly here would not re-render on updates.
         return (
-          <box flexShrink={0}>
-            <text wrapMode="none" fg={context.theme.text.muted}>{` done ${fmt(ts)}`}</text>
-          </box>
+          <Show when={doneAt(sessionID)}>
+            {(ts) => (
+              <box flexShrink={0}>
+                <text wrapMode="none" fg={context.theme.text.muted}>{` done ${fmt(ts())}`}</text>
+              </box>
+            )}
+          </Show>
         )
       },
     })

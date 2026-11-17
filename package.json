@@ -1,6 +1,6 @@
 {
   "name": "opencode-statuskit",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "private": true,
   "description": "OpenCode 2 TUI plugins: terminal status title and session done time",
   "type": "module",

@@ -2,6 +2,14 @@
 
 All notable changes to opencode-statuskit.
 
+## 2.0.1 - 2026-11-17
+
+### Fixed
+
+- `status-done` now updates through a reactive `Show` instead of reading the signal only when the slot component is created.
+- `status-done` falls back to the session's last projected idle marker when the plugin is hot-loaded after a turn, reconnects, or misses the terminal event.
+- Windows native OpenCode 2.3.0 verified end-to-end: plugin discovery, `Plugin.define` execution, terminal title updates, and `done HH:MM` rendering in `prompt.footer.status`.
+
 ## 2.0.0 - 2026-11-17
 
 First release for OpenCode 2.x, verified on OpenCode 2.2.7.

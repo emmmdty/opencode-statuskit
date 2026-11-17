@@ -12,7 +12,8 @@
 | `install.sh` | ✅ 改为 v2 目录式插件安装；隔离沙箱跑通安装/幂等/卸载 |
 | `uninstall.sh` | ✅ 反向清理 v2 插件目录 + V1 遗留文件/条目/rc 块 |
 | `docs/DESIGN-V2.md` | ✅ v2 宿主事实、规格、隔离配方、验证记录 |
-| 版本发布 | ✅ `v2.0.0`（本地 annotated tag，2026-11-17） |
+| 版本发布 | ✅ `v2.0.1`（本地 annotated tag，2026-11-17） |
+| Windows 原生 | ✅ OpenCode 2.3.0 上已安装并实测（`C:\Users\<user>\.config\opencode`） |
 | npm 发布 / install.ps1 | ⬜ 未做 |
 
 本机状态（2026-11-12 已执行 `./install.sh`）：
@@ -164,3 +165,17 @@ opencode-statuskit/
   - `session.step.started`、`session.reasoning.started`、`session.text.started`、`session.tool.called`、`session.compaction.started` 时清除 retry 标记。
   - `hasAttention` 先判断子树是否仍有 running；运行期间历史错误不再压过 🟡，只有整个子树停下后才显示错误 🔴。权限/表单和 retry 仍可覆盖运行状态。
 - 验证：隔离测试覆盖「瞬时 retry → step.started 恢复 🟡」「父运行中子失败保持 🟡」「父停止后显示 🔴」「下一 turn 恢复 🟡」；strict 类型检查通过；真实配置热重载成功。
+
+## 10. 2026-11-17 修复：status-done 在 Windows 2.3.0 不显示
+
+- 现象：Windows 原生 OpenCode 2.3.0 上 `status-title` 正常，`status-done` 不出现。
+- 根因：done 的 slot render 依赖组件创建时读取 signal；在部分挂载/热重载时序下不会因 signal 更新而重新渲染。
+- 修复：
+  - slot 改用 `<Show when={doneAt(sessionID)}>`，由 reactive computation 持有 signal 读取。
+  - `doneAt` 优先用事件时间，回退到会话最新的 projected `idle` 消息；插件在回合结束后才热加载、重连或漏事件时仍能显示上次完成时间。
+  - 用 session `time.busy` / running 状态避免新回合开始时显示旧 done。
+- 验证：
+  - Windows 2.3.0 隔离真实回合（`opencode-go`）收到 `session.execution.succeeded`，slot 重新渲染，终端截屏确认 `done 17:59` 显示在 prompt footer。
+  - 热加载测试：TUI 运行中新增 done 插件，slot 正常挂载并在状态更新后渲染。
+  - Linux 2.2.7 延迟事件回归仍显示 `done HH:MM`；strict 类型检查通过。
+- 真实 Windows 配置已更新，运行中的 TUI 热重载；重启后也会保留上次 idle 时间作为回退。

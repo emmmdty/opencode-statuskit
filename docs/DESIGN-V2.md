@@ -100,8 +100,10 @@ export default Plugin.define({
 
 - Records `Date.now()` on `session.execution.succeeded`, `failed`, and `interrupted` (not `shutdown`).
 - Clears the record when that session starts executing (`execution.started`) or reports `busy`/`retry`.
+- The slot uses `<Show when={doneAt(sessionID)}>` so the signal read is owned by a reactive computation; reading it in the slot component body alone does not re-render.
+- `doneAt` prefers the event timestamp and falls back to the session's last projected `idle` message, so a hot-loaded plugin, a reconnect, or a missed terminal event still shows the last completion time.
 - Renders `done HH:MM` (cross-day: `MM-DD HH:MM`) in `prompt.footer.status` using `theme.text.muted`.
-- In-memory only; cleaned on `session.deleted`.
+- In-memory event state is cleaned on `session.deleted`; the idle-marker fallback is read from the session data store.
 - Feature flag: `OPENCODE_STATUSKIT_DONE=0`.
 
 ## 4. Installer specification
@@ -162,6 +164,8 @@ All checks used the isolated recipe above and the stock 2.2.7 binary.
   `🟢 parent` → `🟡 parent` (child busy) → `🔴 parent` (child failed) → `🟡 parent` (parent resumes) → `🟢 parent`.
 - Both plugins active in one TUI: `🟢 → 🟡 → 🔴 → 🟡 → 🟢` title sequence and `done 17:48` rendered together.
 - False-red regression (2026-11-17): retry recovery via `session.step.started` returns the title to 🟡 without waiting for the turn to end; a child failure is suppressed while the parent is still running and only surfaces 🔴 after the subtree stops.
+- Windows native (OpenCode 2.3.0, `win32`): both plugins loaded from `%USERPROFILE%\.config\opencode\plugins`; title sequence `🟢 → 🟡 → 🔴 → 🟡 → 🟢` observed through the real renderer; a real `opencode-go` turn produced `session.execution.succeeded`, the done slot re-rendered, and `done 17:59` appeared in the Windows terminal prompt footer.
+- Hot-add: a done plugin copied into the config while the TUI was already running mounted its slot and rendered the completion time after the next state update.
 - `done 17:24` rendered in `prompt.footer.status` after a simulated successful turn.
 - TypeScript check passed with `@opencode/plugin@2.2.7`, `@opentui/core@0.8.1`, `@opentui/solid@0.8.1`, `solid-js@1.9.17`, strict mode.
 - Installer exercised in a throwaway `$XDG_CONFIG_HOME` with legacy V1 files/entries: fresh install, idempotent rerun, and uninstall all preserved unrelated `cli.json` keys and left no kit files behind.
