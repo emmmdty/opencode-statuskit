@@ -22,6 +22,8 @@
 | npm 发布 | warn | 两个包已准备，未发布 |
 | 许可证 | ok | MIT，`LICENSE` 与 `package.json` 已补 |
 | 自动化测试 / CI | ok | 13 个测试；Ubuntu / macOS / Windows CI 通过 |
+| 推广稿 | ok | `docs/promotion/` 中英文稿、awesome 条目、演示脚本 |
+| README 截图/GIF | no | 需真实 TUI 会话录制 |
 
 ## 3. 分发就绪度
 
