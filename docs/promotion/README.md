@@ -31,7 +31,7 @@ This directory holds launch copy and recording notes. Nothing here is posted aut
 
 | Day | Action |
 |---|---|
-| 1-5 | Finish P0, run beta with 3-5 users, cut v2.0.2 |
+| 1-5 | Finish P0, run beta with 3-5 users, cut v2.0.3 |
 | 6-7 | Fix beta feedback, verify release assets |
 | 8 | OpenCode Discord, X, 即刻 |
 | 9 | V2EX 分享创造 |

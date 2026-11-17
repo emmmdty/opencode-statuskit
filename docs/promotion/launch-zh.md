@@ -15,12 +15,12 @@
 - 🔴 等权限/表单、正在重试，或子树停止后仍有错误
 - 输入框信息行右侧显示 `done 12:42`
 
-两个很小的 TUI 插件，没有网络请求、没有遥测、没有后台服务、不需要账号。SSH 和 tmux 里也能用（tmux 改的是 pane title，外层标题取决于 `set-titles`）。
+两个很小的 TUI 插件，没有网络请求、没有遥测、没有后台服务、不需要账号。SSH 和 tmux 里也能用（tmux 改的是 pane title，外层标题取决于 `set-titles`）。仓库里还带一条 OpenCode 1.18.x 的 legacy 线（1.0.0 冻结）。
 
 安装（Linux/macOS）：
 
 ```sh
-git clone --branch v2.0.2 --depth 1 https://github.com/emmmdty/opencode-statuskit.git
+git clone --branch v2.0.3 --depth 1 https://github.com/emmmdty/opencode-statuskit.git
 cd opencode-statuskit
 ./install.sh
 ```

@@ -1,7 +1,7 @@
 # 交接文档 — opencode-statuskit（V2）
 
 > 更新时间：2026-11-17 · 宿主基线：OpenCode **2.2.7**（Linux）/ **2.3.0**（Windows） · 设计与验证详情见 `docs/DESIGN-V2.md`
-> V1 历史设计与实现记录见 `docs/DESIGN.md`、`archive/v1/status-title.js`、`archive/v1/status-done.tsx`（仅存档，安装器不再使用）。
+> V1 历史设计与实现记录见 `docs/DESIGN.md`；legacy 线代码在 `legacy/opencode-1/`，面向 OpenCode 1.18.x，冻结在 1.0.0。
 
 ## 0. 新窗口讨论推广先读这里
 
@@ -20,11 +20,13 @@
 | `install.sh` | ✅ 改为 v2 目录式插件安装；隔离沙箱跑通安装/幂等/卸载 |
 | `uninstall.sh` | ✅ 反向清理 v2 插件目录 + V1 遗留文件/条目/rc 块 |
 | `install.ps1` / `uninstall.ps1` | ✅ Windows 原生安装器；PowerShell 5.1 与 7 CI 验证 |
+| `legacy/opencode-1/` | ✅ OpenCode 1.18.x legacy 线，1.0.0 冻结；安装器 + 测试 |
+| 根 `install.sh` | ✅ 按 `opencode --version` 主版本分派 1.x / 2.x |
 | `tests/` | ✅ 13 个测试：标题状态机、done slot、Unix/PowerShell 安装器 |
 | CI | ✅ Ubuntu / macOS / Windows（Node 22） |
 | Release 工作流 | ✅ tag 触发 tar.gz、zip、SHA256SUMS（v2.0.2 待发） |
 | `docs/DESIGN-V2.md` | ✅ v2 宿主事实、规格、隔离配方、验证记录 |
-| 版本发布 | ✅ `v2.0.2`（GitHub Release + tar.gz/zip/SHA256SUMS，2026-11-17） |
+| 版本发布 | ✅ `v2.0.3`（含 OpenCode 1.x legacy 1.0.0；GitHub Release + 校验和） |
 | Windows 原生 | ✅ OpenCode 2.3.0 上已安装并实测（`%USERPROFILE%\.config\opencode`） |
 | npm 发布 | ⬜ 两个包已准备，未发布 |
 
@@ -146,20 +148,25 @@ opencode-statuskit/
 ├── docs/
 │   ├── DESIGN-V2.md             # 当前设计 + v2 隔离验证记录
 │   ├── DISTRIBUTION.md          # 分发与推广交接（新窗口先读）
-│   ├── DESIGN.md                # V1 历史设计
+│   ├── DESIGN.md                # V1 legacy 设计
 │   ├── RELEASING.md             # 发版/回滚/npm 步骤
-│   ├── releases/v2.0.2.md       # Release Notes
+│   ├── releases/v2.0.3.md       # Release Notes
 │   └── promotion/               # 中英文发布稿、awesome 条目、演示脚本
-├── install.sh                   # v2 安装器（POSIX sh，幂等）
-├── install.ps1                  # v2 Windows 安装器（PowerShell 5.1+）
-├── uninstall.sh                 # v2 卸载器
-├── uninstall.ps1                # v2 Windows 卸载器
+├── install.sh                   # 分派器：按 OpenCode 主版本选择 1.x / 2.x
+├── install-v2.sh                # OpenCode 2.x 安装器（POSIX sh，幂等）
+├── install.ps1                  # OpenCode 2.x Windows 安装器（PowerShell 5.1+）
+├── uninstall.sh                 # OpenCode 2.x 卸载器
+├── uninstall.ps1                # OpenCode 2.x Windows 卸载器
 ├── plugins/v2/
 │   ├── status-title/            # tui.ts、package.json、README、LICENSE
 │   └── status-done/             # tui.tsx、package.json、README、LICENSE
-├── tests/                       # 状态机、done slot、安装器、smoke
-├── scripts/build-test-plugin.mjs
-└── archive/v1/                  # V1 历史存档，不安装
+├── legacy/opencode-1/           # OpenCode 1.18.x legacy 线 1.0.0
+│   ├── install.sh               # tui.json + tui-plugins + shell rc
+│   ├── uninstall.sh
+│   ├── plugins/status-*.js(x)
+│   └── README.md
+├── tests/                       # 2.x/1.x 状态机、done slot、安装器、dispatcher、smoke
+└── scripts/build-test-plugin.mjs
 ```
 
 ## 7. 后续待办（按优先级）
@@ -171,6 +178,7 @@ opencode-statuskit/
 5. 分发 P0：✅ LICENSE、GitHub remote、CI、Release 工作流；待补 README 截图/GIF
 6. 分发执行：✅ npm 两个独立包、英文主文档、GitHub 先发；发布稿已备，渠道发布待做
 7. 可选：npm 双轨发布（`exports["./tui"]`），支持 `opencode plugin add`
+8. OpenCode 1.x legacy：✅ 1.0.0 已恢复并测试；建议在 1.18.29/1.18.30 上再跑一次真实 TUI 冒烟
 
 ## 8. 2026-11-12 迁移/验证记录
 
@@ -219,3 +227,14 @@ opencode-statuskit/
 - Release：`v2.0.2` 自动构建 `tar.gz`、`zip`、`SHA256SUMS`；本地已复验校验和与 tarball 安装。
 - npm：`opencode-status-title`、`opencode-status-done` 包结构已准备（`exports["./tui"]`、peerDependencies、LICENSE/README），未发布。
 - 待办：README 截图/GIF、macOS Terminal/iTerm2 的 TUI 实测、npm 发布、渠道推广。
+
+## 12. 2026-11-17 v2.0.3：OpenCode 1.x legacy 线
+
+- 恢复 `legacy/opencode-1/`：V1 插件、`install.sh` / `uninstall.sh`、README、`VERSION=1.0.0`。
+- 根 `install.sh` 读取 `opencode --version`，按主版本分派 1.x / 2.x；2.x 实现在 `install-v2.sh`。
+- `install.ps1` 检测到 OpenCode 1.x 时警告并停止，提示使用 WSL + legacy 安装器。
+- 测试从 13 个增加到 24 个：新增 V1 title/done 测试、legacy 安装器测试、dispatcher 测试。
+- `npm run test:installer` 同时跑 2.x 和 1.x 安装器；Windows 仍跑 PowerShell 5.1/7。
+- README 升级段修正：tag clone 用 `git fetch --tags` + `git checkout <tag>`，不再错误地建议 `git pull`。
+- legacy 线冻结在 1.0.0；支持 Linux/macOS/WSL，原生 Windows 1.x 不支持。
+- 待办：在真实 OpenCode 1.18.x 上跑一次 TUI 冒烟。

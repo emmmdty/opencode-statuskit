@@ -36,10 +36,11 @@ PowerShell 7.
 ## Plugin changes
 
 - Keep the two plugins independent.
+- The OpenCode 1.18.x line lives in `legacy/opencode-1/` and is frozen at 1.0.0. Only compatibility fixes go there; new features go in `plugins/v2/`.
 - Do not add runtime dependencies.
-- A slot render must return JSX or `null`.
+- A slot render must return JSX or `null` (both lines).
 - Add or update tests in `tests/`.
-- Update `docs/DESIGN-V2.md` if the event/state behavior changes.
+- Update `docs/DESIGN-V2.md` if the 2.x event/state behavior changes; update `docs/DESIGN.md` for the 1.x line.
 
 ## Pull requests
 

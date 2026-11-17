@@ -11,17 +11,18 @@
 
 | 资产 | 状态 | 说明 |
 |---|---|---|
-| 两个 TUI 插件 | ok | `status-title`、`status-done`，v2.0.1 |
-| Linux 安装器 | ok | `install.sh`，POSIX sh，幂等 |
+| 两个 TUI 插件 | ok | `status-title`、`status-done`，v2.0.3 |
+| Linux 安装器 | ok | 根 `install.sh` 分派 1.x/2.x，POSIX sh，幂等 |
+| OpenCode 1.x legacy | ok | `legacy/opencode-1/` 1.0.0，冻结；Linux/macOS/WSL |
 | Windows 手动安装 | ok | 已在 Windows 2.3.0 实测 |
 | Windows 安装器 | ok | `install.ps1` / `uninstall.ps1`，PowerShell 5.1/7 CI 通过 |
 | macOS 实测 | warn | 安装器 CI 通过；Terminal / iTerm2 的 TUI 未实测 |
 | 文档 | ok | README 已补 Windows、升级、兼容、故障、安全、开发 |
-| 版本 tag | ok | `v2.0.0`、`v2.0.1` 已推送；`v2.0.2` 已发布 |
+| 版本 tag | ok | `v2.0.0`、`v2.0.1`、`v2.0.2` 已发布；`v2.0.3` 待发 |
 | 远程仓库 | ok | `emmmdty/opencode-statuskit`（public），`main` 已推送 |
 | npm 发布 | warn | 两个包已准备，未发布 |
 | 许可证 | ok | MIT，`LICENSE` 与 `package.json` 已补 |
-| 自动化测试 / CI | ok | 13 个测试；Ubuntu / macOS / Windows CI 通过 |
+| 自动化测试 / CI | ok | 24 个测试；Ubuntu / macOS / Windows CI 通过 |
 | 推广稿 | ok | `docs/promotion/` 中英文稿、awesome 条目、演示脚本 |
 | README 截图/GIF | no | 需真实 TUI 会话录制 |
 
@@ -30,11 +31,11 @@
 ### P0 公开前必须解决（进度）
 
 1. **许可证**：✅ MIT，`LICENSE` 与 `package.json` 已补。
-2. **远程仓库**：✅ `emmmdty/opencode-statuskit`（public），`main`、`v2.0.0`、`v2.0.1` 已推送。
+2. **远程仓库**：✅ `emmmdty/opencode-statuskit`（public），`main`、`v2.0.0`、`v2.0.1`、`v2.0.2` 已推送。
 3. **Windows 安装器**：✅ `install.ps1` / `uninstall.ps1`，PowerShell 5.1 与 7 CI 通过。
-4. **仓库内测试**：✅ 13 个测试，覆盖标题状态机、done slot、Unix/PowerShell 安装器。
+4. **仓库内测试**：✅ 24 个测试，覆盖 2.x/1.x 状态机、done slot、Unix/PowerShell 安装器、dispatcher。
 5. **CI 矩阵**：✅ Ubuntu、macOS、Windows（Node 22）。
-6. **Release 工件**：✅ `v2.0.2` 已发布，含 tar.gz、zip、SHA256SUMS 和 Release Notes。
+6. **Release 工件**：✅ `v2.0.2` 已发布；`v2.0.3` 将包含 1.x legacy 线与校验和。
 7. **包结构决策**：✅ 两个独立 npm 包（`opencode-status-title`、`opencode-status-done`），npm 尚未发布。
 
 ### P1 公开时应有
@@ -123,22 +124,24 @@
 | npm 结构 | 两个独立包：`opencode-status-title`、`opencode-status-done` |
 | 维护 | 个人 best-effort，无 SLA |
 | 推广节奏 | 第 1 周补 P0，第 2 周发布 |
-| 版本 | `v2.0.2` 作为首个公开发布版 |
+| 版本 | `v2.0.3`（含 OpenCode 1.x legacy 1.0.0） |
 
 ## 8. 当前接手提示词
 
 ```text
 Read HANDOVER.md and docs/DISTRIBUTION.md in this repo.
-opencode-statuskit v2.0.2 is released. CI is green.
+opencode-statuskit v2.0.3 is released. CI is green.
+OpenCode 1.x legacy line 1.0.0 is included in legacy/opencode-1/.
 Remaining work: README media (real TUI recording), macOS Terminal/iTerm2 TUI
-verification, npm publish (needs npm login), and posting the launch drafts in
-docs/promotion/.
+verification, a real OpenCode 1.18.x TUI smoke, npm publish (needs npm login),
+and posting the launch drafts in docs/promotion/.
 Do not change plugin code unless a distribution requirement forces it.
 ```
 
 ## 9. 事实边界
 
-- `v2.0.2` 已发布：<https://github.com/emmmdty/opencode-statuskit/releases/tag/v2.0.2>，含 tar.gz、zip、SHA256SUMS。
+- `v2.0.3` 待发布；`v2.0.2` 已发布：<https://github.com/emmmdty/opencode-statuskit/releases/tag/v2.0.2>。
+- OpenCode 1.x legacy 线冻结在 1.0.0，支持 Linux/macOS/WSL；原生 Windows 1.x 不支持。
 - npm 包未发布，`package.json` 仍为 `private: true`。
 - Windows 已提供 `install.ps1`；PowerShell 5.1 实机与 CI PowerShell 7 验证通过。
 - macOS 安装器已由 CI 覆盖；Terminal / iTerm2 的 TUI 未实测。

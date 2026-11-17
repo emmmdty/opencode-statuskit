@@ -2,6 +2,27 @@
 
 All notable changes to opencode-statuskit.
 
+## 2.0.3 - 2026-11-17
+
+Adds the OpenCode 1.18.x legacy line. The 2.x plugin behavior is unchanged from 2.0.2.
+
+### Added
+
+- `legacy/opencode-1/` restores the V1 plugins and installers for OpenCode 1.18.x, frozen at 1.0.0.
+- The root `install.sh` detects `opencode --version` and dispatches to the 1.x or 2.x installer.
+- Legacy installer tests and V1 title/done tests; `npm test` and `npm run test:installer` cover both lines.
+- README sections for the legacy line, including `tui.json`, `tui-plugins/`, and `OPENCODE_DISABLE_TERMINAL_TITLE`.
+
+### Changed
+
+- README upgrade instructions now cover tag-based clones, `main` clones, and release tarballs separately.
+- The 2.x Windows installer warns and stops when it detects OpenCode 1.x; native Windows 1.x is directed to WSL.
+- The root shell installer is now a dispatcher; the 2.x implementation lives in `install-v2.sh`.
+
+### Fixed
+
+- Tag-based installs no longer get incorrect `git pull` upgrade advice.
+
 ## 2.0.2 - 2026-11-17
 
 Distribution release. Plugin behavior is unchanged from 2.0.1.
@@ -19,7 +40,7 @@ Distribution release. Plugin behavior is unchanged from 2.0.1.
 
 - `install.sh` copies the plugins and exits 0 when Node is missing or `cli.json` is JSONC, printing the manual edit instead of failing.
 - README now covers Windows, upgrade, compatibility, troubleshooting, security, and development.
-- V1 plugin archives moved from `plugins/` to `archive/v1/`.
+- V1 plugin archives moved out of `plugins/` (restored as `legacy/opencode-1/` in 2.0.3).
 
 ### Fixed
 
@@ -58,3 +79,12 @@ First release for OpenCode 2.x, verified on OpenCode 2.2.7.
   - historical errors no longer override yellow while any subtree member is still running;
   - errors surface as red only after the subtree stops;
   - subagent busy/error state still propagates to the parent, and continuing the parent clears it.
+
+## Legacy line (OpenCode 1.x)
+
+### 1.0.0 - 2026-11-17
+
+- Restored the V1 title and done plugins for OpenCode 1.18.x under `legacy/opencode-1/`.
+- Added `legacy/opencode-1/install.sh` and `uninstall.sh` using `tui.json`, `tui-plugins/`, and the `OPENCODE_DISABLE_TERMINAL_TITLE` shell block.
+- Added V1 installer tests and V1 title/done unit tests.
+- Frozen: no new features; only compatibility fixes if a real bug is found.

@@ -1,7 +1,8 @@
 # AGENTS.md
 
-This repository ships two OpenCode 2 TUI plugins and their installers. Keep the
-plugin code small and the installers boring.
+This repository ships two OpenCode 2 TUI plugins, a frozen OpenCode 1.x
+legacy line, and their installers. Keep the plugin code small and the
+installers boring.
 
 ## Commands
 
@@ -22,12 +23,13 @@ pwsh -File .\tests\installer.test.ps1
 
 ## Rules
 
+- The OpenCode 1.18.x legacy line is in `legacy/opencode-1/`. It is supported and
+  frozen at 1.0.0; keep it separate from `plugins/v2/`.
 - Do not test against the real `~/.config/opencode`. Use `OPENCODE_CONFIG_DIR`
-  for `install.sh` / `uninstall.sh` and `-ConfigDir` for the PowerShell scripts.
-- Keep both installers idempotent and preserve unrelated `cli.json` keys.
+  for the shell installers and `-ConfigDir` for the PowerShell scripts.
+- Keep all installers idempotent and preserve unrelated config keys.
 - Do not add runtime dependencies to the plugins. `@opencode/plugin` is provided
   by OpenCode; `solid-js` and `@opentui/*` are peers.
-- V1 code in `archive/v1/` is historical; do not install or import it.
 - A plugin slot must return JSX or `null`, never a bare string.
 - Update `CHANGELOG.md` and `docs/releases/<tag>.md` for every release.
 - Run `npm test`, `npm run typecheck`, and `npm run test:installer` before
@@ -35,9 +37,11 @@ pwsh -File .\tests\installer.test.ps1
 
 ## Layout
 
-- `plugins/v2/status-title/tui.ts` — terminal title state machine.
-- `plugins/v2/status-done/tui.tsx` — prompt footer done time.
-- `tests/` — Node test runner; the done test uses a renderer-free JSX runtime.
-- `docs/DESIGN-V2.md` — host facts and isolated test recipe.
+- `plugins/v2/status-title/tui.ts` — terminal title state machine (OpenCode 2.x).
+- `plugins/v2/status-done/tui.tsx` — prompt footer done time (OpenCode 2.x).
+- `legacy/opencode-1/` — frozen OpenCode 1.18.x line; `tui.json` + `tui-plugins/`.
+- `tests/` — Node test runner; done tests use a renderer-free JSX runtime.
+- `docs/DESIGN-V2.md` — 2.x host facts and isolated test recipe.
+- `docs/DESIGN.md` — 1.x legacy design.
 - `docs/DISTRIBUTION.md` — distribution decisions and status.
 - `docs/RELEASING.md` — release, rollback, and npm steps.

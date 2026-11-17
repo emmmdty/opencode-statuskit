@@ -2,7 +2,7 @@
 
 Date: 2026-11-12 · Host baseline: OpenCode **2.2.7** (stock) · Status: ported, isolated runtime verification passed
 
-V1 design history is in `docs/DESIGN.md`. V1 plugin code remains in `archive/v1/status-title.js` and `archive/v1/status-done.tsx` for reference only; the installer does not use it.
+V1 design history is in `docs/DESIGN.md`. The OpenCode 1.18.x legacy line lives in `legacy/opencode-1/` (frozen at 1.0.0); the 2.x installer does not use it.
 
 ## 1. Why V1 stopped working
 
@@ -13,6 +13,8 @@ V2 has three intentional breaking changes:
 - V2 discovers local plugins as **directories**, not individual files.
 
 The old install registered files such as `./tui-plugins/status-title.js`. V2 skips configured file paths with a log warning and never loads them. The old slot name `session_prompt_right` no longer exists, and event payloads moved from `event.properties` to `event.data`.
+
+This is why the repository keeps two independent lines: the 2.x code in `plugins/v2/` and the frozen OpenCode 1.18.x code in `legacy/opencode-1/`. The root `install.sh` dispatches by major version.
 
 ## 2. V2 host facts used by this kit
 

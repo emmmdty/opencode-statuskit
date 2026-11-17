@@ -5,9 +5,7 @@ import { fileURLToPath } from "node:url"
 const outDir = fileURLToPath(new URL("../tests/.tmp/", import.meta.url))
 await mkdir(outDir, { recursive: true })
 
-await build({
-  entryPoints: [fileURLToPath(new URL("../plugins/v2/status-done/tui.tsx", import.meta.url))],
-  outfile: fileURLToPath(new URL("../tests/.tmp/status-done.mjs", import.meta.url)),
+const common = {
   bundle: true,
   platform: "node",
   format: "esm",
@@ -19,4 +17,16 @@ await build({
   jsx: "automatic",
   jsxImportSource: "@opentui/solid",
   logLevel: "warning",
+}
+
+await build({
+  ...common,
+  entryPoints: [fileURLToPath(new URL("../plugins/v2/status-done/tui.tsx", import.meta.url))],
+  outfile: fileURLToPath(new URL("../tests/.tmp/status-done.mjs", import.meta.url)),
+})
+
+await build({
+  ...common,
+  entryPoints: [fileURLToPath(new URL("../legacy/opencode-1/plugins/status-done.tsx", import.meta.url))],
+  outfile: fileURLToPath(new URL("../tests/.tmp/status-done-v1.mjs", import.meta.url)),
 })

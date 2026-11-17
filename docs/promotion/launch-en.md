@@ -13,12 +13,12 @@ I use OpenCode in a terminal and kept switching windows to check whether a turn 
 - 🔴 permission/form pending, retrying, or the subtree stopped with an error
 - `done 12:42` in the prompt footer
 
-It is two small TUI plugins. No network requests, no telemetry, no daemon, no account. It works over SSH and inside tmux (the pane title changes; the outer title depends on `set-titles`).
+It is two small TUI plugins. No network requests, no telemetry, no daemon, no account. It works over SSH and inside tmux (the pane title changes; the outer title depends on `set-titles`). The same repo also includes a frozen legacy line for OpenCode 1.18.x.
 
 Install:
 
 ```sh
-git clone --branch v2.0.2 --depth 1 https://github.com/emmmdty/opencode-statuskit.git
+git clone --branch v2.0.3 --depth 1 https://github.com/emmmdty/opencode-statuskit.git
 cd opencode-statuskit
 ./install.sh
 ```
@@ -42,5 +42,5 @@ Terminal title status for OpenCode 2: 🟢 idle, 🟡 working, 🔴 needs attent
 2/ The useful part is the red state: permission prompts, forms, retries, and stopped subagent errors surface in the title, so you can switch tabs without babysitting the terminal.
 
 3/ Install (Linux/macOS):
-`git clone --branch v2.0.2 --depth 1 https://github.com/emmmdty/opencode-statuskit.git && cd opencode-statuskit && ./install.sh`
+`git clone --branch v2.0.3 --depth 1 https://github.com/emmmdty/opencode-statuskit.git && cd opencode-statuskit && ./install.sh`
 Windows: `install.ps1`. MIT. Feedback on tmux/VS Code/Windows Terminal especially welcome.

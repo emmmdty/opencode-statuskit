@@ -6,10 +6,10 @@ Run from a clean checkout:
 
 ```sh
 npm ci
-npm test
+npm test                 # 2.x and 1.x legacy unit tests
 npm run typecheck
-npm run test:installer
-npm run smoke        # Linux: needs opencode and script(1)
+npm run test:installer   # 2.x and 1.x legacy installers
+npm run smoke            # 2.x Linux: needs opencode and script(1)
 ```
 
 On Windows, run both:
@@ -18,6 +18,9 @@ On Windows, run both:
 powershell -ExecutionPolicy Bypass -File .\tests\installer.test.ps1
 pwsh -File .\tests\installer.test.ps1
 ```
+
+The legacy line is frozen at `1.0.0`; update `legacy/opencode-1/VERSION` only if a
+compatibility patch is released.
 
 ## Version and notes
 

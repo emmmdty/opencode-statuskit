@@ -1,6 +1,6 @@
 {
   "name": "opencode-status-done",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "OpenCode 2 TUI plugin: show the last session completion time (done HH:MM) in the prompt footer",
   "license": "MIT",
   "author": "emmmdty",

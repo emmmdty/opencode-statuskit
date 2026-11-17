@@ -1,7 +1,7 @@
 {
   "name": "opencode-status-title",
-  "version": "2.0.2",
-  "description": "OpenCode 2 TUI plugin: show session state in the terminal title (🟢 idle, 🟡 working, 🔴 needs attention)",
+  "version": "2.0.3",
+  "description": "OpenCode 2 TUI plugin: show session state in the terminal title (\ud83d\udfe2 idle, \ud83d\udfe1 working, \ud83d\udd34 needs attention)",
   "license": "MIT",
   "author": "emmmdty",
   "type": "module",

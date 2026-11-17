@@ -44,6 +44,16 @@ $CliJson = Join-Path $ConfigDir "cli.json"
 $TuiJson = Join-Path $ConfigDir "tui.json"
 $StaleEntries = @("./tui-plugins/status-title.js", "./tui-plugins/status-done.tsx")
 
+$opencodeCommand = Get-Command opencode -ErrorAction SilentlyContinue
+if ($null -ne $opencodeCommand) {
+  $rawVersion = (& opencode --version 2>$null) -join " "
+  if ($rawVersion -match 'v?1\.\d') {
+    Write-Warning "OpenCode 1.x detected. Native Windows OpenCode 1.x is not supported by this installer."
+    Write-Warning "Use WSL and run legacy/opencode-1/install.sh, or upgrade OpenCode to 2.x."
+    exit 1
+  }
+}
+
 function Write-JsonFile {
   param([string]$Path, $Object)
   $json = $Object | ConvertTo-Json -Depth 100
