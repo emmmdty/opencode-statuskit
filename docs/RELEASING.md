@@ -40,7 +40,7 @@ Verify:
 ```sh
 gh release view v2.0.2
 gh release download v2.0.2 --pattern SHA256SUMS
-sha256sum -c SHA256SUMS
+sha256sum -c SHA256SUMS        # macOS: shasum -a 256 -c SHA256SUMS
 ```
 
 Download the release tarball on a clean Linux/macOS/Windows machine and follow the README install steps.
