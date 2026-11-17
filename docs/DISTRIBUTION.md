@@ -112,32 +112,35 @@
 - 个人博客 / X / 公众号；
 - 相关 Awesome / 插件列表。
 
-## 7. 新窗口需要先回答的问题
+## 7. 已定决策
 
-1. 许可证选 MIT 还是 Apache-2.0？
-2. GitHub 仓库用 `emmmdty/opencode-statuskit`，还是新组织/新名字？
-3. 文档英文优先、中文优先，还是双语？
-4. 首发只做 GitHub，还是 GitHub + npm 同步？
-5. npm 走两个独立包，还是一个合并包？
-6. 谁负责发版、issue 回复和安全问题？
-7. 推广节奏：先小范围试用，还是一次性公开发布？
+| 议题 | 决定 |
+|---|---|
+| 许可证 | MIT |
+| 仓库 | `emmmdty/opencode-statuskit`（个人账号，public） |
+| 文档 | 英文 `README.md` 为主 + `README.zh-CN.md` |
+| 首发 | GitHub Release + 安装器；npm 延后 |
+| npm 结构 | 两个独立包：`opencode-status-title`、`opencode-status-done` |
+| 维护 | 个人 best-effort，无 SLA |
+| 推广节奏 | 第 1 周补 P0，第 2 周发布 |
+| 版本 | `v2.0.2` 作为首个公开发布版 |
 
-## 8. 新窗口开场提示词
+## 8. 当前接手提示词
 
 ```text
 Read HANDOVER.md and docs/DISTRIBUTION.md in this repo.
-We want to promote opencode-statuskit v2.0.1.
-Help me decide the distribution route, package structure, GitHub repo setup,
-release checklist, and a two-week promotion plan.
+opencode-statuskit v2.0.2 is released. CI is green.
+Remaining work: README media (real TUI recording), macOS Terminal/iTerm2 TUI
+verification, npm publish (needs npm login), and posting the launch drafts in
+docs/promotion/.
 Do not change plugin code unless a distribution requirement forces it.
-Start by summarizing the P0 gaps and asking me the open decisions in section 7.
 ```
 
 ## 9. 事实边界
 
 - `v2.0.2` 已发布：<https://github.com/emmmdty/opencode-statuskit/releases/tag/v2.0.2>，含 tar.gz、zip、SHA256SUMS。
 - npm 包未发布，`package.json` 仍为 `private: true`。
-- Windows 是手动安装 + 隔离实测，不是 `install.ps1`。
-- macOS 未实测。
+- Windows 已提供 `install.ps1`；PowerShell 5.1 实机与 CI PowerShell 7 验证通过。
+- macOS 安装器已由 CI 覆盖；Terminal / iTerm2 的 TUI 未实测。
 - 桌面 App 不使用这套 TUI 插件；本工具面向终端 TUI。
 - `status-done` 现在会回退到会话最后的 idle 时间；重启后也可能显示上次完成时间。
