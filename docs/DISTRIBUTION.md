@@ -17,23 +17,23 @@
 | Windows 安装器 | no | 缺 `install.ps1` / `uninstall.ps1` |
 | macOS 实测 | no | 未在 Terminal / iTerm2 回归 |
 | 文档 | warn | README、CHANGELOG、DESIGN-V2、HANDOVER 已有 |
-| 版本 tag | ok | `v2.0.0`、`v2.0.1`（本地 annotated tag） |
-| 远程仓库 | no | 无 remote，GitHub 上无仓库 |
+| 版本 tag | ok | `v2.0.0`、`v2.0.1`（annotated tag，已推送） |
+| 远程仓库 | ok | `emmmdty/opencode-statuskit`（public），`main` 已推送 |
 | npm 发布 | no | `package.json` 为 `private: true`，无 TUI exports |
-| 许可证 | no | 无 `LICENSE` |
+| 许可证 | ok | MIT，`LICENSE` 与 `package.json` 已补 |
 | 自动化测试 / CI | no | 仓库内无测试、无 CI |
 
 ## 3. 分发就绪度
 
-### P0 公开前必须解决
+### P0 公开前必须解决（进度）
 
-1. **许可证**：选择 MIT 或 Apache-2.0，补 `LICENSE` 与 `package.json` 的 `license`。
-2. **远程仓库**：创建 GitHub 仓库，配置 remote，推送 `main`、`v2.0.0`、`v2.0.1`。
+1. **许可证**：✅ MIT，`LICENSE` 与 `package.json` 已补。
+2. **远程仓库**：✅ `emmmdty/opencode-statuskit`（public），`main`、`v2.0.0`、`v2.0.1` 已推送。
 3. **Windows 安装器**：写 `install.ps1` / `uninstall.ps1`，在 Windows 原生 PowerShell 验证。
 4. **仓库内测试**：把隔离验证固化为可重复运行的测试；至少覆盖标题状态机、done slot、安装/卸载。
 5. **CI 矩阵**：Linux、macOS、Windows；OpenCode 2.2.7 与 2.3.x；Node 20+。
 6. **Release 工件**：源码包、校验和、Release Notes、回滚说明。
-7. **包结构决策**：先决定 npm 走两个独立包，还是一个合并插件包。
+7. **包结构决策**：✅ 两个独立 npm 包（`opencode-status-title`、`opencode-status-done`），npm 尚未发布。
 
 ### P1 公开时应有
 
@@ -133,7 +133,7 @@ Start by summarizing the P0 gaps and asking me the open decisions in section 7.
 
 ## 9. 事实边界
 
-- 当前发布是本地 tag，没有推送远程，也没有 GitHub Release。
+- 当前 tag 已推送 GitHub，尚无 GitHub Release。
 - npm 包未发布，`package.json` 仍为 `private: true`。
 - Windows 是手动安装 + 隔离实测，不是 `install.ps1`。
 - macOS 未实测。

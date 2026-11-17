@@ -20,7 +20,7 @@
 | `install.sh` | ✅ 改为 v2 目录式插件安装；隔离沙箱跑通安装/幂等/卸载 |
 | `uninstall.sh` | ✅ 反向清理 v2 插件目录 + V1 遗留文件/条目/rc 块 |
 | `docs/DESIGN-V2.md` | ✅ v2 宿主事实、规格、隔离配方、验证记录 |
-| 版本发布 | ✅ `v2.0.1`（本地 annotated tag，2026-11-17） |
+| 版本发布 | ✅ `v2.0.1`（annotated tag，已推送 GitHub，2026-11-17） |
 | Windows 原生 | ✅ OpenCode 2.3.0 上已安装并实测（`%USERPROFILE%\.config\opencode`） |
 | npm 发布 / install.ps1 | ⬜ 未做 |
 
@@ -151,8 +151,8 @@ opencode-statuskit/
 2. 真实会话里确认 `done` 与内置计时器的排列符合预期
 3. Windows 侧 `install.ps1`（v2 目录式安装 + cli.json 合并）
 4. macOS bash/zsh 实机回归
-5. 分发 P0：LICENSE、GitHub remote、CI、Release 校验和
-6. 分发决策：npm 单包/双包、英文/中文优先、首发渠道与节奏
+5. 分发 P0：CI、Release 校验和、README 素材
+6. 分发执行：npm 两个独立包、英文主文档、GitHub 先发、第 2 周推广
 7. 可选：npm 双轨发布（`exports["./tui"]`），支持 `opencode plugin add`
 
 ## 8. 2026-11-12 迁移/验证记录
