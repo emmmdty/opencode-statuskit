@@ -4,6 +4,8 @@
 [![Release](https://img.shields.io/github/v/release/emmmdty/opencode-statuskit)](https://github.com/emmmdty/opencode-statuskit/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
+[English](README.md) | [中文](README.zh-CN.md)
+
 Terminal status for the **OpenCode 2 TUI**: see what the session is doing without switching windows.
 
 ```
