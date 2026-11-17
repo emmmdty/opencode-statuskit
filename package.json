@@ -1,6 +1,6 @@
 {
   "name": "opencode-statuskit",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "private": true,
   "description": "OpenCode 2 TUI plugins: terminal status title and session done time",
   "license": "MIT",
@@ -19,10 +19,34 @@
     "opencode-plugin",
     "tui"
   ],
+  "workspaces": [
+    "plugins/v2/status-title",
+    "plugins/v2/status-done"
+  ],
+  "scripts": {
+    "pretest": "node scripts/build-test-plugin.mjs",
+    "test": "node --import tsx --test tests/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "test:installer": "sh tests/installer.test.sh",
+    "smoke": "sh tests/smoke.sh"
+  },
+  "devDependencies": {
+    "@opencode/plugin": "2.2.7",
+    "@opentui/core": "0.8.1",
+    "@opentui/solid": "0.8.1",
+    "@types/node": "^22.10.2",
+    "esbuild": "^0.28.2",
+    "solid-js": "1.9.17",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  },
   "files": [
     "plugins/v2",
     "install.sh",
+    "install.ps1",
     "uninstall.sh",
+    "uninstall.ps1",
+    "LICENSE",
     "README.md",
     "CHANGELOG.md",
     "docs/DESIGN-V2.md"

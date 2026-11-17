@@ -1,0 +1,57 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npm test
+      - run: npm run typecheck
+      - run: npm run test:installer
+
+      - name: Build release artifacts
+        run: |
+          set -euo pipefail
+          VERSION="${GITHUB_REF_NAME#v}"
+          PREFIX="opencode-statuskit-${VERSION}"
+          mkdir -p dist
+          git archive --format=tar.gz --prefix="${PREFIX}/" -o "dist/${PREFIX}.tar.gz" HEAD
+          git archive --format=zip --prefix="${PREFIX}/" -o "dist/${PREFIX}.zip" HEAD
+          (cd dist && sha256sum "${PREFIX}.tar.gz" "${PREFIX}.zip" > SHA256SUMS)
+          ls -lh dist
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          NOTES="docs/releases/${GITHUB_REF_NAME}.md"
+          TITLE="opencode-statuskit ${GITHUB_REF_NAME}"
+          if [ -f "$NOTES" ]; then
+            gh release create "$GITHUB_REF_NAME" dist/* \
+              --title "$TITLE" \
+              --notes-file "$NOTES" \
+              --verify-tag
+          else
+            gh release create "$GITHUB_REF_NAME" dist/* \
+              --title "$TITLE" \
+              --generate-notes \
+              --verify-tag
+          fi

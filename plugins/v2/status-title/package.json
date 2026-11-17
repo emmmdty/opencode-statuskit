@@ -1,0 +1,46 @@
+{
+  "name": "opencode-status-title",
+  "version": "2.0.2",
+  "description": "OpenCode 2 TUI plugin: show session state in the terminal title (🟢 idle, 🟡 working, 🔴 needs attention)",
+  "license": "MIT",
+  "author": "emmmdty",
+  "type": "module",
+  "exports": {
+    "./tui": "./tui.ts"
+  },
+  "files": [
+    "tui.ts",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "opencode",
+    "opencode-plugin",
+    "opencode-tui",
+    "tui",
+    "terminal-title"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/emmmdty/opencode-statuskit.git",
+    "directory": "plugins/v2/status-title"
+  },
+  "homepage": "https://github.com/emmmdty/opencode-statuskit#readme",
+  "bugs": {
+    "url": "https://github.com/emmmdty/opencode-statuskit/issues"
+  },
+  "dependencies": {
+    "@opencode/plugin": "^2.2.7"
+  },
+  "peerDependencies": {
+    "@opentui/core": ">=0.8.1",
+    "@opentui/solid": ">=0.8.1",
+    "solid-js": ">=1.9.0 <2"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

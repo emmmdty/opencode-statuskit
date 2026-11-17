@@ -1,7 +1,7 @@
 # 交接文档 — opencode-statuskit（V2）
 
 > 更新时间：2026-11-17 · 宿主基线：OpenCode **2.2.7**（Linux）/ **2.3.0**（Windows） · 设计与验证详情见 `docs/DESIGN-V2.md`
-> V1 历史设计与实现记录见 `docs/DESIGN.md`、`plugins/status-title.js`、`plugins/status-done.tsx`（仅存档，安装器不再使用）。
+> V1 历史设计与实现记录见 `docs/DESIGN.md`、`archive/v1/status-title.js`、`archive/v1/status-done.tsx`（仅存档，安装器不再使用）。
 
 ## 0. 新窗口讨论推广先读这里
 

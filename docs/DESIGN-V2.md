@@ -2,7 +2,7 @@
 
 Date: 2026-11-12 · Host baseline: OpenCode **2.2.7** (stock) · Status: ported, isolated runtime verification passed
 
-V1 design history is in `docs/DESIGN.md`. V1 plugin code remains in `plugins/status-title.js` and `plugins/status-done.tsx` for reference only; the installer does not use it.
+V1 design history is in `docs/DESIGN.md`. V1 plugin code remains in `archive/v1/status-title.js` and `archive/v1/status-done.tsx` for reference only; the installer does not use it.
 
 ## 1. Why V1 stopped working
 

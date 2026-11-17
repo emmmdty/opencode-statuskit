@@ -2,6 +2,29 @@
 
 All notable changes to opencode-statuskit.
 
+## 2.0.2 - 2026-11-17
+
+Distribution release. Plugin behavior is unchanged from 2.0.1.
+
+### Added
+
+- `install.ps1` and `uninstall.ps1` for Windows, with no Node.js dependency.
+- Repository tests for the title state machine, the done slot, and the Unix/PowerShell installers.
+- CI matrix for Ubuntu, macOS, and Windows (Node 22), including PowerShell 5.1 and 7.
+- Release workflow that builds `.tar.gz`, `.zip`, and `SHA256SUMS` and creates a GitHub Release.
+- npm package manifests for `opencode-status-title` and `opencode-status-done` (prepared, not published).
+- `SECURITY.md`, an issue form, and a release notes template.
+
+### Changed
+
+- `install.sh` copies the plugins and exits 0 when Node is missing or `cli.json` is JSONC, printing the manual edit instead of failing.
+- README now covers Windows, upgrade, compatibility, troubleshooting, security, and development.
+- V1 plugin archives moved from `plugins/` to `archive/v1/`.
+
+### Fixed
+
+- The installer notes now say when `terminal.title` was not changed automatically.
+
 ## 2.0.1 - 2026-11-17
 
 ### Fixed

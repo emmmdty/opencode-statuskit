@@ -5,3 +5,9 @@
 
 # logs / scratch
 *.log
+
+# dependencies
+node_modules/
+
+# test build output
+tests/.tmp/

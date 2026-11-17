@@ -1,0 +1,81 @@
+name: Bug report
+description: Report a problem with the title or done plugin
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please include enough detail to reproduce the issue. For security issues, use the private advisory link in SECURITY.md instead.
+  - type: input
+    id: opencode
+    attributes:
+      label: OpenCode version
+      description: Output of `opencode --version`
+      placeholder: opencode v2.3.0
+    validations:
+      required: true
+  - type: input
+    id: plugin
+    attributes:
+      label: Plugin version
+      description: Release tag or commit
+      placeholder: v2.0.2
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - Linux
+        - macOS
+        - Windows
+        - WSL
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: terminal
+    attributes:
+      label: Terminal
+      description: Windows Terminal, iTerm2, tmux, VS Code, Kitty, WezTerm, Ghostty, ...
+      placeholder: Windows Terminal 1.22
+    validations:
+      required: true
+  - type: dropdown
+    id: install
+    attributes:
+      label: Install method
+      options:
+        - install.sh
+        - install.ps1
+        - manual copy
+        - npm (not published yet)
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Include a screenshot or a copy of the title/footer text if possible.
+    validations:
+      required: true
+  - type: textarea
+    id: config
+    attributes:
+      label: Relevant cli.json
+      description: Redact anything private; the `terminal` and `plugins` keys are usually enough.
+      render: json
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Redact prompts, keys, and paths. `~/.local/share/opencode/log/opencode.log` on Linux.
+      render: text

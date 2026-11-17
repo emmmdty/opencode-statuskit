@@ -69,7 +69,7 @@
 ## 4. 安装/卸载规格（install.sh / uninstall.sh）
 
 - POSIX sh（macOS bash 3.2 兼容），`set -eu`
-- 文件：`plugins/status-title.js`、`plugins/status-done.tsx` → `~/.config/opencode/tui-plugins/`；`--without-title` 只拷 done 并只注册 done（不动 shell rc）
+- 文件（现存档于 `archive/v1/`）：`status-title.js`、`status-done.tsx` → `~/.config/opencode/tui-plugins/`；`--without-title` 只拷 done 并只注册 done（不动 shell rc）
 - tui.json：不存在则整写；存在则 node 合并（严格 JSON；JSONC/无 node → 打印手动指令 exit 2，不碰 keybinds——非法 keybind 值会导致 TUI 启动失败）
 - rc 投放（仅 title 功能）：标记块 `# >>> opencode-statuskit >>>`（幂等 + 卸载可清除）；追加前若文件末尾无换行先补 `\n`（否则 `>>>` 被解析为重定向，破坏 rc）；zsh → `${ZDOTDIR:-$HOME}/.zshenv`；bash → `.bashrc`（检测 Debian 交互守卫 `case $- in`，插入守卫之前）+ `.bash_profile`；fish → `${XDG_CONFIG_HOME:-$HOME/.config}/fish/config.fish`（`set -gx`）；`$SHELL` 检测 + `--shell` 覆盖；未知/空 shell → 打印手动指引并 `exit 2`（文件已装，仅 env 未注入）
 - 提示：tmux 环境不自动刷新（给出 `tmux set-environment -g` 命令）；运行中实例需重启生效
