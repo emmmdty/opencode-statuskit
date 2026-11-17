@@ -1,7 +1,15 @@
 # 交接文档 — opencode-statuskit（V2）
 
-> 更新时间：2026-11-12 · 宿主基线：OpenCode **2.2.7** · 设计与验证详情见 `docs/DESIGN-V2.md`
+> 更新时间：2026-11-17 · 宿主基线：OpenCode **2.2.7**（Linux）/ **2.3.0**（Windows） · 设计与验证详情见 `docs/DESIGN-V2.md`
 > V1 历史设计与实现记录见 `docs/DESIGN.md`、`plugins/status-title.js`、`plugins/status-done.tsx`（仅存档，安装器不再使用）。
+
+## 0. 新窗口讨论推广先读这里
+
+分发与推广交接已单独整理：`docs/DISTRIBUTION.md`。
+
+一句话：插件已经可用，但公开分发还缺许可证、远程仓库、Windows 安装器、仓库内测试/CI、Release 校验和、npm 包结构决策。
+
+新窗口开场提示词、渠道选择、npm 单包/双包对比、推广素材清单都在该文档。先读 §3（P0/P1/P2）和 §7（待决策问题），再开始讨论渠道与节奏。
 
 ## 1. 当前状态
 
@@ -126,6 +134,7 @@ opencode-statuskit/
 ├── package.json                 # 版本元数据（private，未发布 npm）
 ├── docs/
 │   ├── DESIGN-V2.md             # 当前设计 + v2 隔离验证记录
+│   ├── DISTRIBUTION.md          # 分发与推广交接（新窗口先读）
 │   └── DESIGN.md                # V1 历史设计
 ├── install.sh                   # v2 安装器（POSIX sh，幂等）
 ├── uninstall.sh                 # v2 卸载器
@@ -142,7 +151,9 @@ opencode-statuskit/
 2. 真实会话里确认 `done` 与内置计时器的排列符合预期
 3. Windows 侧 `install.ps1`（v2 目录式安装 + cli.json 合并）
 4. macOS bash/zsh 实机回归
-5. 可选：npm 双轨发布（`exports["./tui"]`），支持 `opencode plugin add`
+5. 分发 P0：LICENSE、GitHub remote、CI、Release 校验和
+6. 分发决策：npm 单包/双包、英文/中文优先、首发渠道与节奏
+7. 可选：npm 双轨发布（`exports["./tui"]`），支持 `opencode plugin add`
 
 ## 8. 2026-11-12 迁移/验证记录
 
