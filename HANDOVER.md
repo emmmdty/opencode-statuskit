@@ -238,3 +238,4 @@ opencode-statuskit/
 - README 升级段修正：tag clone 用 `git fetch --tags` + `git checkout <tag>`，不再错误地建议 `git pull`。
 - legacy 线冻结在 1.0.0；支持 Linux/macOS/WSL，原生 Windows 1.x 不支持。
 - 待办：在真实 OpenCode 1.18.x 上跑一次 TUI 冒烟。
+- Release：`v2.0.3` 已发布，含 tar.gz、zip、SHA256SUMS；tarball 内两套安装器测试均通过。
