@@ -1,6 +1,6 @@
 # opencode-statuskit
 
-OpenCode TUI status plugins for **OpenCode 2.x** (verified on **2.2.7**). Two independently installable plugins:
+OpenCode TUI status plugins for **OpenCode 2.x** (verified on **2.2.7**). Current release: **2.0.0** (see `CHANGELOG.md`). Two independently installable plugins:
 
 | Plugin | What it does | Needs config |
 |---|---|---|

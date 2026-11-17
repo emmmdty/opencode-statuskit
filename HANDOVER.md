@@ -12,6 +12,7 @@
 | `install.sh` | ✅ 改为 v2 目录式插件安装；隔离沙箱跑通安装/幂等/卸载 |
 | `uninstall.sh` | ✅ 反向清理 v2 插件目录 + V1 遗留文件/条目/rc 块 |
 | `docs/DESIGN-V2.md` | ✅ v2 宿主事实、规格、隔离配方、验证记录 |
+| 版本发布 | ✅ `v2.0.0`（本地 annotated tag，2026-11-17） |
 | npm 发布 / install.ps1 | ⬜ 未做 |
 
 本机状态（2026-11-12 已执行 `./install.sh`）：
@@ -120,6 +121,8 @@ install.sh 做的事：
 opencode-statuskit/
 ├── README.md                    # 用户文档（v2 安装/开关/限制）
 ├── HANDOVER.md                  # 本文档
+├── CHANGELOG.md                 # 版本记录
+├── package.json                 # 版本元数据（private，未发布 npm）
 ├── docs/
 │   ├── DESIGN-V2.md             # 当前设计 + v2 隔离验证记录
 │   └── DESIGN.md                # V1 历史设计

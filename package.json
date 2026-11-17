@@ -1,0 +1,20 @@
+{
+  "name": "opencode-statuskit",
+  "version": "2.0.0",
+  "private": true,
+  "description": "OpenCode 2 TUI plugins: terminal status title and session done time",
+  "type": "module",
+  "keywords": [
+    "opencode",
+    "opencode-plugin",
+    "tui"
+  ],
+  "files": [
+    "plugins/v2",
+    "install.sh",
+    "uninstall.sh",
+    "README.md",
+    "CHANGELOG.md",
+    "docs/DESIGN-V2.md"
+  ]
+}
